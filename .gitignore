@@ -1,0 +1,7 @@
+*.swp
+*.swo
+
+__work/
+*.vcd
+*.fst
+*.wlf

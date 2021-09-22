@@ -1,0 +1,1 @@
+as we scale pure ripple-carry adders, the maximum path delay through the circuit will increase, increasing without bound the necessary time for a valid result to appear at the adder outputs
