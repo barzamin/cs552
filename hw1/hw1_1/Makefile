@@ -15,4 +15,11 @@ sim: $(TARGET_BIN)
 	$(IVSIM) $< $(IVSIMFLAGS)
 
 clean:
-	rm -f $(TARGET_BIN) $(SIM_WAVE)
+	rm -rf $(TARGET_BIN) *.wlf *.vcd *.fst *.vcheck.out __work transcript
+
+%.vcheck.out: %.v
+	vcheck.sh $< $@
+
+check: demux1_2.vcheck.out demux1_4.vcheck.out quaddemux1_4.vcheck.out
+	name-convention-check
+	cat *.vcheck.out
