@@ -2,7 +2,10 @@
 *.swo
 
 __work/
+transcript
+
+*.vcheck.out
+
 *.vcd
 *.fst
 *.wlf
-transcript
