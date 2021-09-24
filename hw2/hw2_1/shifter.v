@@ -21,6 +21,7 @@ module shifter(
     // nb: generated with `shifter.py` (in this directory)
     /* ---------------- 16-bit right barrel shifter and rotator ----------------*/
 
+        //// shift layer 2^0 = 1 ////
         wire [15:0] shifted1;
         wire [0:0] s1_infill;
         // shift muxes
@@ -43,6 +44,7 @@ module shifter(
         // infill muxes
         mux2_1 s1_fillmux0 ( .s(rot), .in0(pad), .in1(reversed[0]), .out(s1_infill[0]) );
 
+        //// shift layer 2^1 = 2 ////
         wire [15:0] shifted2;
         wire [1:0] s2_infill;
         // shift muxes
@@ -66,6 +68,7 @@ module shifter(
         mux2_1 s2_fillmux0 ( .s(rot), .in0(pad), .in1(shifted1[0]), .out(s2_infill[0]) );
         mux2_1 s2_fillmux1 ( .s(rot), .in0(pad), .in1(shifted1[1]), .out(s2_infill[1]) );
 
+        //// shift layer 2^2 = 4 ////
         wire [15:0] shifted4;
         wire [3:0] s4_infill;
         // shift muxes
@@ -91,6 +94,7 @@ module shifter(
         mux2_1 s4_fillmux2 ( .s(rot), .in0(pad), .in1(shifted2[2]), .out(s4_infill[2]) );
         mux2_1 s4_fillmux3 ( .s(rot), .in0(pad), .in1(shifted2[3]), .out(s4_infill[3]) );
 
+        //// shift layer 2^3 = 8 ////
         wire [15:0] shifted8;
         wire [7:0] s8_infill;
         // shift muxes

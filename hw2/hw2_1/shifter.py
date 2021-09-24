@@ -21,11 +21,15 @@ def shift_layer(bus_in, bus_out, shift, ctrl, rotate_net, pad_net):
 
 print(f'/* ---------------- {WIDTH}-bit right barrel shifter and rotator ----------------*/\n')
 
+print('\n//// shift layer 2^0 = 1 ////')
 print(f'wire [{WIDTH-1}:0] shifted1;')
 shift_layer('reversed', 'shifted1', 1, 'Cnt[0]', 'rot', 'pad')
-print(f'\nwire [{WIDTH-1}:0] shifted2;')
+print('\n//// shift layer 2^1 = 2 ////')
+print(f'wire [{WIDTH-1}:0] shifted2;')
 shift_layer('shifted1', 'shifted2', 2, 'Cnt[1]', 'rot', 'pad')
-print(f'\nwire [{WIDTH-1}:0] shifted4;')
+print('\n//// shift layer 2^2 = 4 ////')
+print(f'wire [{WIDTH-1}:0] shifted4;')
 shift_layer('shifted2', 'shifted4', 4, 'Cnt[2]', 'rot', 'pad')
-print(f'\nwire [{WIDTH-1}:0] shifted8;')
+print('\n//// shift layer 2^3 = 8 ////')
+print(f'wire [{WIDTH-1}:0] shifted8;')
 shift_layer('shifted4', 'shifted8', 8, 'Cnt[3]', 'rot', 'pad')
