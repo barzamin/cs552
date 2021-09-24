@@ -19,7 +19,7 @@ module shifter_hier_bench;
         Op = 2'b00;
         fail = 0;
 
-    #5000;
+    #1000000;
         if (fail)
             $display("TEST FAILED");
         else
