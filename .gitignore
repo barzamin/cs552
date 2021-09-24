@@ -3,6 +3,7 @@
 
 __work/
 transcript
+*.out
 
 *.vcheck.out
 
