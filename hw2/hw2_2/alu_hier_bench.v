@@ -137,7 +137,7 @@ module alu_hier_bench;
 	endcase // case (Op)
 	
 	if (cerror == 1'b1) begin
-	  $display("ERRORCHECK :: ALU :: Inputs :: Op = %d , A = %x, B = %x, Cin = %x, invA = %x, invB = %x, sign = %x :: Outputs :: Out = %x, Ofl = %x, Z = %z :: Expected :: Out = %x, Ofl = %x, Z = %x", Op, A_pre_inv, B_pre_inv, Cin, invA, invB, sign, Out, Ofl, Z, ExOut[15:0], ExOfl, ExZ);
+	  $display("ERRORCHECK :: ALU :: Inputs :: Op = %b , A = %x, B = %x, Cin = %x, invA = %x, invB = %x, sign = %x :: Outputs :: Out = %x, Ofl = %x, Z = %x :: Expected :: Out = %x, Ofl = %x, Z = %x", Op, A_pre_inv, B_pre_inv, Cin, invA, invB, sign, Out, Ofl, Z, ExOut[15:0], ExOfl, ExZ);
            fail = 1;
         end
 	

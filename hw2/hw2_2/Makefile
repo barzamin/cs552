@@ -20,6 +20,6 @@ clean:
 %.vcheck.out: %.v
 	vcheck.sh $< $@
 
-check: mux2_1.vcheck.out reversor.vcheck.out shifter.vcheck.out
+check: alu.vcheck.out
 	name-convention-check
 	cat *.vcheck.out
