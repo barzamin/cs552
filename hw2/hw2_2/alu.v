@@ -42,10 +42,10 @@ module alu(
     wire [15:0] adder_out;
     wire adder_Cout;
     adder16 adder (
-        .A  (A_txf),
-        .B  (B_txf),
-        .Cin(Cin),
-        .S  (adder_out),
+        .A   (A_txf),
+        .B   (B_txf),
+        .Cin (Cin),
+        .S   (adder_out),
         .Cout(adder_Cout)
     );
 
@@ -59,7 +59,7 @@ module alu(
     // -- arithmetic muxing and bitwise ops
     always @* casex (Op)
         ALU_ADD : Out = adder_out;     // ADD
-        ALU_OR  : Out = A_txf | B_txf;  // OR
+        ALU_OR  : Out = A_txf | B_txf; // OR
         ALU_XOR : Out = A_txf ^ B_txf; // XOR
         ALU_AND : Out = A_txf & B_txf; // AND
         3'b1??  : Out = shifter_out;   // all shifts happen when Op[2] is high and look directly at Op[1:0].

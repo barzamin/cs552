@@ -6,7 +6,7 @@ TARGET_BIN = hw1_1.out
 SOURCES := $(wildcard *.v)
 
 test:
-	wsrun.pl shifter_hier_bench ${SOURCES}
+	wsrun.pl alu_hier_bench ${SOURCES}
 
 $(TARGET_BIN): $(SOURCES)
 	$(IVCOMP) $(IVCOMPFLAGS) -o $@ $^
