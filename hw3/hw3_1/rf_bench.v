@@ -93,6 +93,8 @@ module rf_bench(/*AUTOARG*/);
       #10
 
       // Print log of what transpired
+      $display("r0: %d r1: %d r2: %d r3: %d r4: %d r5: %d r6: %d r7: %d",
+         ref_rf[0], ref_rf[1], ref_rf[2], ref_rf[3], ref_rf[4], ref_rf[5], ref_rf[6], ref_rf[7]);
       $display("Cycle: %d R1: %d Sim: %d Exp: %d R2: %d Sim: %d Exp: %d W: %d data: %d enable: %d",
                cycle_count,
                read1regsel, read1data, ref_r1data,
