@@ -10,3 +10,16 @@ transcript
 *.vcd
 *.fst
 *.wlf
+
+*.so.*
+
+*.trace
+*.ptrace
+
+*.img
+*.lst
+
+*.dmem
+*.reg
+
+*.log

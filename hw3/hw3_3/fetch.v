@@ -25,11 +25,13 @@ module fetch(
     memory2c mem (
         .clk       (clk),
         .rst       (rst),
-        .wr        (0), // never need to write in this problem
-        .data_in   (0), // ibid
-        .createdump(0), // don't need to check memory at end of run
+        .wr        (1'b0), // never need to write in this problem
+        .data_in   (16'h0000), // ibid
+        .createdump(1'b0), // don't need to check memory at end of run
         .addr      (pc),
-        .enable    (1), // enable memory so we can read!
+        .enable    (1'b1), // enable memory so we can read!
         .data_out  (instr)
     );
+
+    assign err = 0;
 endmodule
