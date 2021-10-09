@@ -69,68 +69,40 @@ module proc_beqz_added(
     );
 
     reg decode_err;
-    always @* casex (instr)
-        16'b00000_??????????? : begin 
-            halt = 1;
-            decode_err = 0;
+    always @* begin
+        halt = 0;
+        decode_err = 0;
+        pc_offset = 16'h000;
+        alu_B = 16'h0;
+        alu_op = 1;
+        reg_write_en = 0;
+        rd = 3'b000;
+        casex (instr)
+            16'b00000_??????????? : begin 
+                halt = 1;
+            end
+            16'b01000_???_???_????? : begin // ADDI
+                alu_B = imm0_sext;
+                alu_op = 0;
 
-            pc_offset = 0;
+                reg_write_en = 1;
+                rd = instr[7:5];
+            end
+            16'b11011_???_???_???_10 : begin // XOR
+                alu_B = rt_data;
+                alu_op = 1;
 
-            alu_B = 16'h0;
-            alu_op = 1;
-
-            reg_write_en = 0;
-            rd = 3'b000;
-        end
-        16'b01000_???_???_????? : begin // ADDI
-            halt = 0;
-            decode_err = 0;
-
-            pc_offset = 0;
-
-            alu_B = imm0_sext;
-            alu_op = 0;
-
-            reg_write_en = 1;
-            rd = instr[7:5];
-        end
-        16'b11011_???_???_???_10 : begin // XOR
-            halt = 0;
-            decode_err = 0;
-
-            pc_offset = 0;
-
-            alu_B = rt_data;
-            alu_op = 1;
-
-            reg_write_en = 1;
-            rd = instr[4:2];
-        end
-        16'b01100_???_???????? : begin // BEQZ
-            halt = 0;
-            decode_err = 0;
-
-            pc_offset = (~|rs_data) ? jump_imm_sext : 16'h0;
-
-            alu_B = 16'h0;
-            alu_op = 1;
-
-            reg_write_en = 0;
-            rd = 3'b000;
-        end
-        default : begin
-            halt = 0;
-            decode_err = 1;
-
-            pc_offset = 0;
-
-            alu_B = 16'h0;
-            alu_op = 1;
-
-            reg_write_en = 0;
-            rd = 3'b000;
-        end
-    endcase
+                reg_write_en = 1;
+                rd = instr[4:2];
+            end
+            16'b01100_???_???????? : begin // BEQZ
+                pc_offset = (~|rs_data) ? jump_imm_sext : 16'h0;
+            end
+            default : begin
+                decode_err = 1;
+            end
+        endcase
+    end
 
     assign err = rf_err | fetch_err | decode_err;
 endmodule
