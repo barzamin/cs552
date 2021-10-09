@@ -1,14 +1,16 @@
-module register(
+module register
+#(parameter WIDTH=16)
+(
 	input  wire clk,
 	input  wire rst,
-	input  wire [15:0] write_data,
+	input  wire [WIDTH-1:0] write_data,
 	input  wire write_en,
-	output wire [15:0] read_data
+	output wire [WIDTH-1:0] read_data
 );
-	wire [15:0] d;
+	wire [WIDTH-1:0] d;
 	assign d = write_en ? write_data : read_data; // loopback q -> d unless we're writing
 
-	dff reg_flops [15:0] (
+	dff reg_flops [WIDTH-1:0] (
 		.clk(clk),
 		.rst(rst),
 		.q(read_data),
