@@ -23,3 +23,7 @@ transcript
 *.reg
 
 *.log
+
+*.aux
+*.synctex.gz
+*.pdf

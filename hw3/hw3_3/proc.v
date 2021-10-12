@@ -59,48 +59,42 @@ module proc(
     );
 
     reg decode_err;
-    always @* casex (instr)
-        16'b00000_??????????? : begin 
-            halt = 1;
-            decode_err = 0;
+    wire [4:0] opcode;
+    assign opcode = instr[15:11];
+    localparam OP_HALT = 5'b00000;
+    localparam OP_ADDI = 5'b01000;
+    localparam OP_XOR  = 5'b11011;
+    localparam OP_BEQZ = 5'b01100;
+    always @* begin
+        halt = 0;
+        decode_err = 0;
+        alu_B = 16'h0;
+        alu_op = 1;
+        reg_write_en = 0;
+        rd = 3'b000;
+        case (opcode)
+            OP_HALT : begin
+                halt = 1;
+            end
+            OP_ADDI : begin
+                alu_B = imm0_sext;
+                alu_op = 0;
 
-            alu_B = 16'h0;
-            alu_op = 1;
+                reg_write_en = 1;
+                rd = instr[7:5];
+            end
+            OP_XOR : begin
+                alu_B = rt_data;
+                alu_op = 1;
 
-            reg_write_en = 0;
-            rd = 3'b000;
-        end
-        16'b01000_???_???_????? : begin // ADDI
-            halt = 0;
-            decode_err = 0;
-
-            alu_B = imm0_sext;
-            alu_op = 0;
-
-            reg_write_en = 1;
-            rd = instr[7:5];
-        end
-        16'b11011_???_???_???_10 : begin // XOR
-            halt = 0;
-            decode_err = 0;
-
-            alu_B = rt_data;
-            alu_op = 1;
-
-            reg_write_en = 1;
-            rd = instr[4:2];
-        end
-        default : begin
-            halt = 0;
-            decode_err = 1;
-
-            alu_B = 16'h0;
-            alu_op = 1;
-
-            reg_write_en = 0;
-            rd = 3'b000;
-        end
-    endcase
+                reg_write_en = 1;
+                rd = instr[4:2];
+            end
+            default : begin
+                decode_err = 1;
+            end
+        endcase
+    end
 
     assign err = rf_err | fetch_err | decode_err;
 endmodule

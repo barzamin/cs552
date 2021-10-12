@@ -69,6 +69,12 @@ module proc_beqz_added(
     );
 
     reg decode_err;
+    wire [4:0] opcode;
+    assign opcode = instr[15:11];
+    localparam OP_HALT = 5'b00000;
+    localparam OP_ADDI = 5'b01000;
+    localparam OP_XOR  = 5'b11011;
+    localparam OP_BEQZ = 5'b01100;
     always @* begin
         halt = 0;
         decode_err = 0;
@@ -77,25 +83,25 @@ module proc_beqz_added(
         alu_op = 1;
         reg_write_en = 0;
         rd = 3'b000;
-        casex (instr)
-            16'b00000_??????????? : begin 
+        case (opcode)
+            OP_HALT : begin
                 halt = 1;
             end
-            16'b01000_???_???_????? : begin // ADDI
+            OP_ADDI : begin
                 alu_B = imm0_sext;
                 alu_op = 0;
 
                 reg_write_en = 1;
                 rd = instr[7:5];
             end
-            16'b11011_???_???_???_10 : begin // XOR
+            OP_XOR : begin
                 alu_B = rt_data;
                 alu_op = 1;
 
                 reg_write_en = 1;
                 rd = instr[4:2];
             end
-            16'b01100_???_???????? : begin // BEQZ
+            OP_BEQZ : begin
                 pc_offset = (~|rs_data) ? jump_imm_sext : 16'h0;
             end
             default : begin
