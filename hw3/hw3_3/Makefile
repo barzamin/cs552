@@ -4,7 +4,7 @@ test: proc.asm
 	wsrun.pl -prog proc.asm proc_hier_bench ${SOURCES}
 
 clean:
-	rm -rf *.img *.wlf *.vcd *.fst *.vcheck.out __work
+	rm -rf *.img *.lst *.wlf *.vcd *.fst *.vcheck.out *.img *.img.dmem *.img.reg *.log *.trace transcript archsim.* __work
 
 %.vcheck.out: %.v
 	vcheck.sh $< $@

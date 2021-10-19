@@ -4,7 +4,7 @@ test:
 	wsrun.pl rf_bench ${SOURCES}
 
 clean:
-	rm -rf $(TARGET_BIN) *.wlf *.vcd *.fst *.vcheck.out __work
+	rm -rf *.img *.lst *.wlf *.vcd *.fst *.vcheck.out *.img *.img.dmem *.img.reg *.log *.trace transcript archsim.* __work
 
 %.vcheck.out: %.v
 	vcheck.sh $< $@

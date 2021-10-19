@@ -55,18 +55,12 @@ module proc_beqz_added(
     wire [4:0] imm0;
     wire [15:0] imm0_sext;
     assign imm0 = instr[4:0];
-    sext #(.INW(5), .OUTW(16)) imm0_sign_extender (
-        .in(imm0),
-        .out(imm0_sext)
-    );
+    assign imm0_sext = {{11{imm0[4]}}, imm0}; // sign extend to 16 bits
 
-    wire [8:0] jump_imm;
+    wire [7:0] jump_imm;
     wire [15:0] jump_imm_sext;
     assign jump_imm = instr[7:0];
-    sext #(.INW(7), .OUTW(16)) jump_imm_sign_extender (
-        .in(jump_imm),
-        .out(jump_imm_sext)
-    );
+    assign jump_imm_sext = {{8{jump_imm[7]}}, jump_imm}; // sign-extend to 16 bits
 
     reg decode_err;
     wire [4:0] opcode;

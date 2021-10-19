@@ -7,7 +7,7 @@ loadfile_all.img: fetch.asm
 	assemble.sh $<
 
 clean:
-	rm -rf *.wlf *.vcd *.fst *.vcheck.out __work *.img
+	rm -rf *.img *.lst *.wlf *.vcd *.fst *.vcheck.out *.img *.img.dmem *.img.reg *.log *.trace transcript archsim.* __work
 
 %.vcheck.out: %.v
 	vcheck.sh $< $@
