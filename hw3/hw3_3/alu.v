@@ -1,5 +1,4 @@
-module alu
-(
+module alu(
     input wire op, // 0 = add, 1 = xor
     input wire [15:0] A,
     input wire [15:0] B,
