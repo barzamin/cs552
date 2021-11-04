@@ -1,23 +1,25 @@
 WIDTH=16
 
 def shift_layer(bus_in, bus_out, shift, ctrl, rotate_net, pad_net):
-	# generate internal wiring
-	infill_net = f's{shift}_infill'
-	print(f'wire [{shift-1}:0] {infill_net};')
+    # generate internal wiring
+    infill_net = f's{shift}_infill'
+    print(f'wire [{shift-1}:0] {infill_net};')
 
-	# generate main shift muxes
-	print('// shift muxes')
-	for i in range(WIDTH):
-		if i + shift > WIDTH - 1:
-			shift_wire = f'{infill_net}[{i+shift-WIDTH}]'
-		else:
-			shift_wire = f'{bus_in}[{i + shift}]'
-		print(f'mux2_1 s{shift}_mux{i} ( .s({ctrl}), .in0({bus_in}[{i}]), .in1({shift_wire}), .out({bus_out}[{i}]) );')
+    # generate main shift muxes
+    print('// shift muxes')
+    for i in range(WIDTH):
+        if i + shift > WIDTH - 1:
+            shift_wire = f'{infill_net}[{i+shift-WIDTH}]'
+        else:
+            shift_wire = f'{bus_in}[{i + shift}]'
+        # print(f'mux2_1 s{shift}_mux{i} ( .s({ctrl}), .in0({bus_in}[{i}]), .in1({shift_wire}), .out({bus_out}[{i}]) );')
+        print(f'assign {bus_out}[{i}] = {ctrl} ? {shift_wire} : {bus_in}[{i}];')
 
-	# generate infill muxes
-	print('// infill muxes')
-	for iidx in range(shift):
-		print(f'mux2_1 s{shift}_fillmux{iidx} ( .s({rotate_net}), .in0({pad_net}), .in1({bus_in}[{iidx}]), .out({infill_net}[{iidx}]) );')
+    # generate infill muxes
+    print('// infill muxes')
+    for iidx in range(shift):
+        # print(f'mux2_1 s{shift}_fillmux{iidx} ( .s({rotate_net}), .in0({pad_net}), .in1({bus_in}[{iidx}]), .out({infill_net}[{iidx}]) );')
+        print(f'assign {infill_net}[{iidx}] = {rotate_net} ? {bus_in}[{iidx}] : {pad_net};')
 
 print(f'/* ---------------- {WIDTH}-bit right barrel shifter and rotator ----------------*/\n')
 
