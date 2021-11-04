@@ -1,4 +1,4 @@
-module reversor(
+module reverser(
 	input  wire [15:0] in,
 	input  wire reverse,
 	output wire [15:0] out
