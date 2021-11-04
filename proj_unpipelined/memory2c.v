@@ -34,16 +34,14 @@
 
 module memory2c (data_out, data_in, addr, enable, wr, createdump, clk, rst);
 
-   output  [15:0] data_out;
-   input [15:0]   data_in;
-   input [15:0]   addr;
-   input          enable;
-   input          wr;
-   input          createdump;
-   input          clk;
-   input          rst;
-
-   wire [15:0]    data_out;
+   output wire [15:0] data_out;
+   input  wire [15:0] data_in;
+   input  wire [15:0] addr;
+   input  wire        enable;
+   input  wire        wr;
+   input  wire        createdump;
+   input  wire        clk;
+   input  wire        rst;
    
    reg [7:0]      mem [0:65535];
    reg            loaded;
