@@ -203,32 +203,45 @@ module decode (
                 rf_write_en = 1'b1;
             end
 
-            // flag-setting instructions
+            // -- flag-setting instructions
             OP_SEQ : begin
                 instr_rformat = 1'b1;
+
                 alu_op = ALU_SUB;
                 fcu_op = FCU_EQ;
+
+                wb_op = WB_FLAG;
                 rf_write_en = 1'b1;
             end
             OP_SLT : begin
                 instr_rformat = 1'b1;
+
                 alu_op = ALU_SUB;
                 fcu_op = FCU_LT;
+
+                wb_op = WB_FLAG;
                 rf_write_en = 1'b1;
             end
             OP_SLE : begin
                 instr_rformat = 1'b1;
+
                 alu_op = ALU_SUB;
                 fcu_op = FCU_LE;
+
+                wb_op = WB_FLAG;
                 rf_write_en = 1'b1;
             end
             OP_SCO : begin
                 instr_rformat = 1'b1;
+
                 alu_op = ALU_ADD;
                 fcu_op = FCU_CRY;
+
+                wb_op = WB_FLAG;
                 rf_write_en = 1'b1;
             end
 
+            // -- immediate loads
             OP_LBI : begin
                 rf_write_en = 1'b1;
                 alu_op = ALU_PSB;
