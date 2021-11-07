@@ -34,7 +34,7 @@ module decode (
     rf register_file (
         .clk       (clk),
         .rst       (rst),
-        
+
         .write_en  (rf_write_en),
         .write_reg (rf_write_reg),
         .write_data(wb_data),
@@ -48,10 +48,10 @@ module decode (
 
     // -- pull out some fields
     wire [4:0] opcode;
-    wire [1:0] op_ext; // extended 2 bits at the LSB of the instruction, used as an additional function code for some arithmetic instructions. 
+    wire [1:0] op_ext; // extended 2 bits at the LSB of the instruction, used as an additional function code for some arithmetic instructions.
     assign opcode = instr[15:11];
     assign op_ext = instr[1:0];
-    
+
     wire [4:0] imm5;
     wire [7:0] imm8;
     wire [10:0] disp11;
@@ -91,17 +91,14 @@ module decode (
     endcase
 
     // -- PC computation
-    wire [15:0] joffset;//, next_pc_basic, next_pc_taken;
+    wire [15:0] joffset;
+    assign joffset = imm16;
     pccomputer pccomputer (
         .pc           (pc),
         .joffset      (joffset),
         .next_pc_basic(next_pc_basic),
         .next_pc_taken(next_pc_taken)
     );
-
-    localparam FLOW_BASIC = 2'b00;
-    localparam FLOW_JUMP = 2'b10;
-    localparam FLOW_COND = 2'b11;
 
     // -- select logic
     always @* begin

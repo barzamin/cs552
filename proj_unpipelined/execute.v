@@ -17,6 +17,8 @@ module execute(
     output wire flag,
     output wire err
 );
+    `include "ops.vh"
+
     // -- alu input select
     wire [15:0] alu_A, alu_B; // alu inputs
     assign alu_A = regv_1;
@@ -42,9 +44,10 @@ module execute(
 
     // -- flow mux
     always @* casex (flow_ty)
-        2'b0? : next_pc = next_pc_basic;
-        2'b10 : next_pc = next_pc_taken;
-        2'b11 : next_pc = flag ? next_pc_taken : next_pc_basic;
+        default   : next_pc = next_pc_basic; // FLOW_BASIC
+        FLOW_JUMP : next_pc = next_pc_taken;
+        FLOW_COND : next_pc = flag ? next_pc_taken : next_pc_basic;
+        FLOW_ALU  : next_pc = alu_out;
     endcase
 
     assign err = 1'b0;

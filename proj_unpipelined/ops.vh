@@ -1,3 +1,8 @@
+/*------------------------------------------------------------------------------
+--  single source of truth for all multi-bit control signals.
+------------------------------------------------------------------------------*/
+
+
 // -- Flag Computation Unit optable
 localparam FCU_EQ  = 3'b000;
 localparam FCU_NEQ = 3'b001;
@@ -76,3 +81,9 @@ localparam OPE_ANDN = 2'b11;
 localparam WB_ALU  = 2'b00;
 localparam WB_MEM  = 2'b01;
 localparam WB_FLAG = 2'b10;
+
+// -- flow codes
+localparam FLOW_BASIC = 2'b00;
+localparam FLOW_ALU   = 2'b01;
+localparam FLOW_JUMP  = 2'b10;
+localparam FLOW_COND  = 2'b11;
