@@ -258,6 +258,52 @@ module decode (
                 immcode = IMMC_SIMM8;
                 alu_b_imm = 1'b1;
             end
+
+            // -- conditional branches
+            OP_BEQZ : begin
+                alu_op = ALU_PSA; // pass through Rs; we check if zero
+                immcode = IMMC_SIMM8;
+
+                fcu_op = FCU_EQ;
+                flow_ty = FLOW_COND;
+            end
+            OP_BNEZ : begin
+                alu_op = ALU_PSA; // pass through Rs; we check if zero
+                immcode = IMMC_SIMM8;
+
+                fcu_op = FCU_NEQ;
+                flow_ty = FLOW_COND;
+            end
+            OP_BLTZ : begin
+                alu_op = ALU_PSA; // pass through Rs; we check if zero
+                immcode = IMMC_SIMM8;
+
+                fcu_op = FCU_GT; // 0 greater than x
+                flow_ty = FLOW_COND;
+            end
+            OP_BGEZ : begin
+                alu_op = ALU_PSA; // pass through Rs; we check if zero
+                immcode = IMMC_SIMM8;
+
+                fcu_op = FCU_LE; // 0 less than or equal to x
+                flow_ty = FLOW_COND;
+            end
+
+            // -- unconditional branches
+            OP_JR : begin // "jump register"
+                // alu_out <- Rs + sext(imm8)
+                alu_op = ALU_ADD;
+                immcode = IMMC_SIMM8;
+                alu_b_imm = 1'b1;
+
+                // next_pc <- alu_out
+                flow_ty = FLOW_ALU;
+            end
+
+            OP_J : begin
+                immcode = IMMC_DISPL;
+                flow_ty = FLOW_JUMP;
+            end
         endcase
     end
 endmodule
