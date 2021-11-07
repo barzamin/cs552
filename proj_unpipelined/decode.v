@@ -178,6 +178,7 @@ module decode (
             OP_BTR : begin
                 alu_op = ALU_BTR;
                 instr_rformat = 1'b1;
+                rf_write_en = 1'b1;
             end
 
             OP_ARITH : begin
