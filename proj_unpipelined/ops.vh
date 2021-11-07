@@ -81,6 +81,7 @@ localparam OPE_ANDN = 2'b11;
 localparam WB_ALU  = 2'b00;
 localparam WB_MEM  = 2'b01;
 localparam WB_FLAG = 2'b10;
+localparam WB_LINK = 2'b11;
 
 // -- flow codes
 localparam FLOW_BASIC = 2'b00;

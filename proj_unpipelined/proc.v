@@ -46,32 +46,35 @@ module proc (/*AUTOARG*/
     wire [15:0] next_pc_basic, next_pc_taken;
     wire mem_read_en, mem_write_en;
     wire alu_a_imm, alu_b_imm;
-    wire [15:0] regv_1, regv_2, imm16;
+    wire [15:0] regv_1, regv_2, imm16; // register and immediate data
     decode decode (
-        .rst    (rst),
-        .clk    (clk),
-        .err    (decode_err),
+        .rst          (rst),
+        .clk          (clk),
+        .err          (decode_err),
 
-        .pc     (pc),
-        .instr  (instr),
+        .pc           (pc),
+        .instr        (instr),
 
-        .halt   (halt),
+        .halt         (halt),
 
-        .alu_op (alu_op),
-        .fcu_op (fcu_op),
+        .alu_op       (alu_op),
+        .fcu_op       (fcu_op),
 
         .regv_1       (regv_1),
         .regv_2       (regv_2),
         .imm16        (imm16),
 
-        .flow_ty(flow_ty),
+        .flow_ty      (flow_ty),
         .next_pc_basic(next_pc_basic),
         .next_pc_taken(next_pc_taken),
 
-        .alu_b_imm(alu_b_imm),
+        .alu_b_imm    (alu_b_imm),
 
-        .wb_op(wb_op),
-        .wb_data(wb_data)
+        .mem_read_en  (mem_read_en),
+        .mem_write_en (mem_write_en),
+
+        .wb_op        (wb_op),
+        .wb_data      (wb_data)
     );
 
     // -- EXECUTE
@@ -110,19 +113,20 @@ module proc (/*AUTOARG*/
         .read_en   (mem_read_en),
         .write_en  (mem_write_en),
         .read_data (mem_out),
-        .write_data(write_data)
+        .write_data(regv_2)
     );
 
     // -- WRITEBACK
     writeback writeback (
-        .err    (wb_err),
+        .err          (wb_err),
 
-        .wb_op  (wb_op),
-        .flag   (flag),
-        .alu_out(alu_out),
-        .mem_out(mem_out),
+        .wb_op        (wb_op),
+        .next_pc_basic(next_pc_basic),
+        .flag         (flag),
+        .alu_out      (alu_out),
+        .mem_out      (mem_out),
 
-        .wb_data(wb_data)
+        .wb_data      (wb_data)
     );
 endmodule // proc
 // DUMMY LINE FOR REV CONTROL :0:
