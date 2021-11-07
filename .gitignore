@@ -27,3 +27,5 @@ transcript
 *.aux
 *.synctex.gz
 *.pdf
+
+.__afs*
