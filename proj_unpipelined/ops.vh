@@ -8,7 +8,8 @@ localparam FCU_GE  = 3'b101;
 localparam FCU_CRY = 3'b110; // filled in don't-care
 
 // -- ALU optable
-localparam ALU_PASS = 4'b0000; // pick a value which is caught by default
+localparam ALU_PSA  = 4'b0000; // pick a value which is caught by default
+localparam ALU_PSB  = 4'b0001;
 localparam ALU_XOR  = 4'b1000;
 localparam ALU_SLBI = 4'b0100;
 localparam ALU_ANDN = 4'b0001;

@@ -59,8 +59,11 @@ module alu(
         postreverse = 1'b0;
 
         casex (op)
-            default : begin // passthru A
+            default : begin // ALU_PSA
                 out = A;
+            end
+            ALU_PSB : begin
+                out = B;
             end
             ALU_XOR : begin // XOR A ^ B
                 out = A ^ B;

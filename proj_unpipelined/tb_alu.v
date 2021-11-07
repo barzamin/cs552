@@ -36,7 +36,7 @@ module tb_alu();
     initial begin
         A = 16'b0000;
         B = 16'b0000;
-        op = ALU_PASS;
+        op = ALU_PSA;
         fail = 0;
 
     #5000;
@@ -60,8 +60,13 @@ module tb_alu();
         gold_carryout = 1'b0;
 
         case (op)
-            default : begin // ALU_PASS
+            default : begin // ALU_PSA
                 gold_out = A;
+                if (gold_out[15:0] !== out) cerror = 1'b1;
+            end
+
+            ALU_PSB : begin
+                gold_out = B;
                 if (gold_out[15:0] !== out) cerror = 1'b1;
             end
 
