@@ -71,3 +71,8 @@ localparam OPE_ADD  = 2'b00;
 localparam OPE_SUB  = 2'b01;
 localparam OPE_XOR  = 2'b10;
 localparam OPE_ANDN = 2'b11;
+
+// -- writeback ops
+localparam WB_ALU  = 2'b00;
+localparam WB_MEM  = 2'b01;
+localparam WB_FLAG = 2'b10;

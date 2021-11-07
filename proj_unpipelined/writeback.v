@@ -8,10 +8,12 @@ module writeback (
 
     output reg [15:0] wb_data
 );
+    `include "ops.vh"
+
     always @* casex (wb_op)
-        2'b00 : wb_data = alu_out;
-        2'b01 : wb_data = mem_out;
-        2'b1x : wb_data = {15'b0, flag};
+        default : wb_data = alu_out;
+        WB_MEM  : wb_data = mem_out;
+        WB_FLAG : wb_data = {15'b0, flag};
     endcase
 
     assign err = 1'b0;
