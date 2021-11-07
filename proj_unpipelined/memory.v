@@ -24,4 +24,6 @@ module memory (
         .data_out  (read_data),
         .createdump(1'b0) // don't need to dump (yet)
     );
+
+    assign err = 1'b0;
 endmodule
