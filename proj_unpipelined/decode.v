@@ -17,11 +17,14 @@ module decode (
     output wire [15:0] regv_2,
     output reg  [15:0] imm16,
 
-    output reg  [1:0] flow_ty,
+    output reg  [1:0]  flow_ty,
     output wire [15:0] next_pc_basic,
     output wire [15:0] next_pc_taken,
 
     output reg alu_b_imm,
+
+    output reg mem_read_en,
+    output reg mem_write_en,
 
     output reg halt
 );
@@ -67,15 +70,16 @@ module decode (
 
     // -- select logic for rf regselects
     reg instr_rformat; // 1 - rformat, 0 - everything else
-    reg writeto_rs;
+    reg link, writeto_rs, readfrom_rd;
     wire [2:0] rd_intermediate; // selected by format
     assign rd_intermediate = instr_rformat ? field_rd_rfmt : field_rd_ifmt;
-    assign read1_reg = field_rs; // TODO
-    assign read2_reg = field_rt_rfmt; // TODO
-    assign rf_write_reg = writeto_rs ? field_rs : rd_intermediate;
+    assign read1_reg = field_rs;
+    assign read2_reg = readfrom_rd ? rd_intermediate : field_rt_rfmt;
+    assign rf_write_reg = link ? 3'h7 :
+                    writeto_rs ? field_rs : rd_intermediate;
 
     // -- imm16 computation
-    reg [1:0] immcode;
+    reg [2:0] immcode;
     localparam IMMC_ZIMM5 = 3'b000;
     localparam IMMC_SIMM5 = 3'b010;
     localparam IMMC_ZIMM8 = 3'b001;
@@ -103,6 +107,7 @@ module decode (
     // -- select logic
     always @* begin
         // defaults to prevent latching. note some are arbitrary
+        // TODO organize
         halt = 1'b0;
         err = 1'b0;
         alu_op = ALU_PSA;
@@ -112,15 +117,21 @@ module decode (
         instr_rformat = 1'b0;
         rf_write_en = 1'b0;
         writeto_rs = 1'b0;
+        readfrom_rd = 1'b0;
         alu_b_imm = 1'b0;
         wb_op = WB_ALU;
+        link = 1'b0;
+
+        mem_write_en = 1'b0;
+        mem_read_en  = 1'b0;
 
         case (opcode)
             OP_HALT : begin
                 halt = 1'b1; // TODO
             end
 
-            OP_NOP : begin
+            // SIIC and RTI specifically handled as nops (as per spec) so they don't raise an `err` and hang the sim
+            OP_NOP, OP_SIIC, OP_RTI : begin
                 // nop :)
             end
 
@@ -290,6 +301,10 @@ module decode (
             end
 
             // -- unconditional branches
+            OP_J : begin
+                immcode = IMMC_DISPL;
+                flow_ty = FLOW_JUMP;
+            end
             OP_JR : begin // "jump register"
                 // alu_out <- Rs + sext(imm8)
                 alu_op = ALU_ADD;
@@ -300,9 +315,76 @@ module decode (
                 flow_ty = FLOW_ALU;
             end
 
-            OP_J : begin
+            // -- linked unconditional jumps
+            OP_JAL : begin
                 immcode = IMMC_DISPL;
                 flow_ty = FLOW_JUMP;
+
+                link = 1'b1; // Rs <- 7
+
+                wb_op = WB_LINK;
+                rf_write_en = 1'b1; // and write it back
+            end
+            OP_JALR : begin
+                // alu_out <- Rs + sext(imm8)
+                alu_op = ALU_ADD;
+                immcode = IMMC_SIMM8;
+                alu_b_imm = 1'b1;
+
+                // next_pc <- alu_out
+                flow_ty = FLOW_ALU;
+
+                link = 1'b1;
+
+                wb_op = WB_LINK;
+                rf_write_en = 1'b1; // and write it back
+            end
+
+            // -- memory load and store
+            OP_ST : begin
+                mem_write_en = 1'b1;
+
+                // compute address as
+                //  alu_out <- Rs + sext(imm5)
+                alu_op = ALU_ADD;
+                alu_b_imm = 1'b1;
+                immcode = IMMC_SIMM5;
+
+                readfrom_rd = 1'b1;
+            end
+            OP_LD : begin
+                mem_read_en = 1'b1;
+
+                // compute address as
+                //  alu_out <- Rs + sext(imm5)
+                alu_op = ALU_ADD;
+                alu_b_imm = 1'b1;
+                immcode = IMMC_SIMM5;
+
+                wb_op = WB_MEM;
+                rf_write_en = 1'b1;
+            end
+
+            // weird one! "store and update"; computes address as Rs + sext(imm5) but writes that back to Rs!
+            OP_STU : begin
+                mem_write_en = 1'b1;
+
+                // compute address as
+                //  alu_out <- Rs + sext(imm5)
+                alu_op = ALU_ADD;
+                alu_b_imm = 1'b1;
+                immcode = IMMC_SIMM5;
+
+                readfrom_rd = 1'b1;
+
+                // also write back
+                wb_op = WB_ALU;
+                writeto_rs = 1'b1;
+                rf_write_en = 1'b1;
+            end
+
+            default : begin
+                err = 1'b1; // bad instruction!
             end
         endcase
     end
