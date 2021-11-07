@@ -2,26 +2,37 @@
 module decode (
     input  wire clk,
     input  wire rst,
+    output reg err,
 
     input  wire [15:0] instr,
     input  wire [15:0] pc,
 
+    input  wire [15:0] wb_data,
+
     output reg [3:0] alu_op,
+
     output reg [2:0] fcu_op,
-    output reg halt,
-    output reg err
+
+    output reg [1:0] flow_ty,
+    output wire [15:0] next_pc_basic,
+    output wire [15:0] next_pc_taken,
+
+    output reg halt
 );
+    // (nearly) all control op defs
+    `include "ops.vh"
+
     // -- register file
-    wire [2:0] write_reg, read1_reg, read2_reg;
-    wire [15:0] write_data, regv_1, regv_2;
-    wire rf_write_en;
+    wire [2:0] rf_write_reg, read1_reg, read2_reg;
+    wire [15:0] rf_write_data, regv_1, regv_2;
+    reg rf_write_en;
     rf register_file (
         .clk       (clk),
         .rst       (rst),
         
         .write_en  (rf_write_en),
-        .write_reg (write_reg),
-        .write_data(write_data),
+        .write_reg (rf_write_reg),
+        .write_data(wb_data),
 
         .read1_reg (read1_reg),
         .read1_data(regv_1),
@@ -34,6 +45,7 @@ module decode (
     wire [4:0] opcode;
     wire [1:0] op_ext; // extended 2 bits at the LSB of the instruction, used as an additional function code for some arithmetic instructions. 
     assign opcode = instr[15:11];
+    assign op_ext = instr[1:0];
     
     wire [4:0] imm5;
     wire [7:0] imm8;
@@ -42,78 +54,20 @@ module decode (
     assign imm8   = instr[7:0];
     assign disp11 = instr[10:0];
 
-    // -- Flag Computation Unit optable
-    localparam FCU_EQ  = 3'b000;
-    localparam FCU_NEQ = 3'b001;
-    localparam FCU_LT  = 3'b010;
-    localparam FCU_GT  = 3'b011;
-    localparam FCU_LE  = 3'b100;
-    localparam FCU_GE  = 3'b101;
-    localparam FCU_CRY = 3'b110; // filled in don't-care
+    wire [2:0] field_rs, field_rt_rfmt, field_rd_rfmt, field_rd_ifmt;
+    assign field_rs      = instr[10:8];
+    assign field_rt_rfmt = instr[7:5];
+    assign field_rd_rfmt = instr[4:2];
+    assign field_rd_ifmt = instr[7:5];
 
-    // -- ALU optable
-    // pick some values for don't cares
-    localparam ALU_XOR  = 4'b0000;
-    localparam ALU_SLBI = 4'b0100;
-    localparam ALU_ANDN = 4'b0001;
-    localparam ALU_ADD  = 4'b0010;
-    localparam ALU_SUB  = 4'b0110;
-    localparam ALU_BTR  = 4'b1110;
-    localparam ALU_SRL  = 4'b0011;
-    localparam ALU_SLL  = 4'b1011;
-    localparam ALU_ROR  = 4'b0111;
-    localparam ALU_ROL  = 4'b1111;
-
-    // -- opcode listing
-    localparam OP_HALT  = 5'b00000;
-    localparam OP_NOP   = 5'b00001;
-
-    localparam OP_ADDI  = 5'b01000;
-    localparam OP_SUBI  = 5'b01001;
-    localparam OP_XORI  = 5'b01010;
-    localparam OP_ANDNI = 5'b01011;
-
-    localparam OP_ROLI  = 5'b10100;
-    localparam OP_SLLI  = 5'b10101;
-    localparam OP_RORI  = 5'b10110;
-    localparam OP_SRLI  = 5'b10111;
-
-    localparam OP_ST    = 5'b10000;
-    localparam OP_LD    = 5'b10001;
-    localparam OP_STU   = 5'b10011;
-
-
-    localparam OP_BTR   = 5'b11001;
-    localparam OP_ARITH = 5'b11011; // } instruction family (basic arithmetic and logic)
-    localparam OP_ROLL  = 5'b11010; // } instructon family  (rotates + shifts)
-
-    localparam OP_SEQ   = 5'b11100;
-    localparam OP_SLT   = 5'b11101;
-    localparam OP_SLE   = 5'b11110;
-    localparam OP_SCO   = 5'b11111;
-
-    localparam OP_BEQZ  = 5'b01100;
-    localparam OP_BNEZ  = 5'b01101;
-    localparam OP_BLTZ  = 5'b01110;
-    localparam OP_BGEZ  = 5'b01111;
-
-    localparam OP_LBI   = 5'b11000;
-    localparam OP_SLBI  = 5'b10010;
-
-    localparam OP_J     = 5'b00100;
-    localparam OP_JR    = 5'b00101;
-    localparam OP_JAL   = 5'b00110;
-    localparam OP_JALR  = 5'b00111;
-
-    // nops until we implement exceptions as bonus :)
-    localparam OP_SIIC  = 5'b00010;
-    localparam OP_RTI   = 5'b00011;
-
-    // -- extended op listing
-    localparam OPE_ADD  = 2'b00;
-    localparam OPE_SUB  = 2'b01;
-    localparam OPE_XOR  = 2'b10;
-    localparam OPE_ANDN = 2'b11;
+    // -- select logic for rf regselects
+    reg instr_rformat; // 1 - rformat, 0 - everything else
+    reg rf_indexing_store;
+    wire [2:0] rd_intermediate; // selected by format
+    assign rd_intermediate = instr_rformat ? field_rd_rfmt : field_rd_ifmt;
+    assign read1_reg = field_rs; // TODO
+    assign read2_reg = field_rt_rfmt; // TODO
+    assign rf_write_reg = rd_intermediate; // todo rf_indexing_store  
 
     // -- imm16 computation
     reg [15:0] imm16;
@@ -133,7 +87,7 @@ module decode (
     endcase
 
     // -- PC computation
-    wire [15:0] joffset, next_pc_basic, next_pc_taken;
+    wire [15:0] joffset;//, next_pc_basic, next_pc_taken;
     pccomputer pccomputer (
         .pc           (pc),
         .joffset      (joffset),
@@ -141,13 +95,20 @@ module decode (
         .next_pc_taken(next_pc_taken)
     );
 
+    localparam FLOW_BASIC = 2'b00;
+    localparam FLOW_JUMP = 2'b10;
+    localparam FLOW_COND = 2'b11;
+
     // -- select logic
     always @* begin
         // defaults to prevent latching. note some are arbitrary
         halt = 1'b0;
-        alu_op = ALU_XOR;
+        alu_op = ALU_PASS;
         fcu_op = FCU_EQ;
+        flow_ty = FLOW_BASIC;
         err = 1'b0;
+        instr_rformat = 1'b0;
+        rf_write_en = 1'b0;
 
         case (opcode)
             OP_HALT : begin
@@ -161,45 +122,95 @@ module decode (
             // immediate arithmetic
             OP_ADDI : begin
                 alu_op = ALU_ADD;
+                rf_write_en = 1'b1;
             end
             OP_SUBI : begin
                 alu_op = ALU_SUB;
+                rf_write_en = 1'b1;
             end
             OP_XORI : begin
                 alu_op = ALU_XOR;
+                rf_write_en = 1'b1;
             end
             OP_ANDNI : begin
                 alu_op = ALU_ANDN;
+                rf_write_en = 1'b1;
             end
             OP_ROLI : begin
                 alu_op = ALU_ROL;
+                rf_write_en = 1'b1;
             end
             OP_SLLI : begin
                 alu_op = ALU_SLL;
+                rf_write_en = 1'b1;
             end
             OP_RORI : begin
                 alu_op = ALU_ROR;
+                rf_write_en = 1'b1;
             end
             OP_SRLI : begin
                 alu_op = ALU_SRL;
+                rf_write_en = 1'b1;
+            end
+
+            // non-immediate arithmetic
+            OP_BTR : begin
+                alu_op = ALU_BTR;
+                instr_rformat = 1'b1;
+            end
+
+            OP_ARITH : begin
+                instr_rformat = 1'b1;
+                case (op_ext)
+                    2'b00 : alu_op = ALU_ADD;
+                    2'b01 : alu_op = ALU_SUB;
+                    2'b10 : alu_op = ALU_XOR;
+                    2'b11 : alu_op = ALU_ANDN;
+                endcase
+                rf_write_en = 1'b1;
+            end
+
+            OP_ROLL : begin
+                instr_rformat = 1'b1;
+                case (op_ext)
+                    2'b00 : alu_op = ALU_ROL;
+                    2'b01 : alu_op = ALU_SLL;
+                    2'b10 : alu_op = ALU_ROR;
+                    2'b11 : alu_op = ALU_SRL;
+                endcase
+                rf_write_en = 1'b1;
             end
 
             // flag-setting instructions
             OP_SEQ : begin
+                instr_rformat = 1'b1;
                 alu_op = ALU_SUB;
                 fcu_op = FCU_EQ;
+                rf_write_en = 1'b1;
             end
             OP_SLT : begin
+                instr_rformat = 1'b1;
                 alu_op = ALU_SUB;
                 fcu_op = FCU_LT;
+                rf_write_en = 1'b1;
             end
             OP_SLE : begin
+                instr_rformat = 1'b1;
                 alu_op = ALU_SUB;
                 fcu_op = FCU_LE;
+                rf_write_en = 1'b1;
             end
             OP_SCO : begin
+                instr_rformat = 1'b1;
                 alu_op = ALU_ADD;
                 fcu_op = FCU_CRY;
+                rf_write_en = 1'b1;
+            end
+
+            OP_LBI : begin
+                // just directly loop back the immediate so we don't even have to get out of this stage
+                rf_write_en = 1'b1;
+                alu_op = ALU_PASS;
             end
         endcase
     end
