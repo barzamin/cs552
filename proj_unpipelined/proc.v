@@ -42,17 +42,27 @@ module proc (/*AUTOARG*/
     wire [2:0] fcu_op;   // flag computation unit opcode. sent to EXECUTE
     wire [1:0] wb_op;    // writeback operation for WRITEBACK stage
     wire [15:0] wb_data; // loops back from WRITEBACK stage (well, not "stage" b/c this is unpipelined, but)
+    wire [1:0] flow_ty;
+    wire [15:0] next_pc_basic, next_pc_taken;
     wire mem_read_en, mem_write_en;
     decode decode (
-        .rst   (rst),
-        .clk   (clk),
-        .err   (decode_err),
+        .rst    (rst),
+        .clk    (clk),
+        .err    (decode_err),
 
-        .pc    (pc),
-        .instr (instr),
-        .halt  (halt),
-        .alu_op(alu_op),
-        .fcu_op(fcu_op)
+        .pc     (pc),
+        .instr  (instr),
+
+        .halt   (halt),
+
+        .alu_op (alu_op),
+        .fcu_op (fcu_op),
+
+        .flow_ty(flow_ty),
+        .next_pc_basic(next_pc_basic),
+        .next_pc_taken(next_pc_taken),
+
+        .wb_data(wb_data)
     );
 
     // -- EXECUTE
@@ -64,7 +74,13 @@ module proc (/*AUTOARG*/
         .flag   (flag),
         .alu_op (alu_op),
         .fcu_op (fcu_op),
-        .alu_out(alu_out)
+
+        .flow_ty(flow_ty),
+        .next_pc_basic(next_pc_basic),
+        .next_pc_taken(next_pc_taken),
+
+        .alu_out(alu_out),
+        .next_pc(next_pc)
     );
 
     // -- MEMORY
