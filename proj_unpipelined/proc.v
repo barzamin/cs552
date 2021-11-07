@@ -45,6 +45,8 @@ module proc (/*AUTOARG*/
     wire [1:0] flow_ty;
     wire [15:0] next_pc_basic, next_pc_taken;
     wire mem_read_en, mem_write_en;
+    wire alu_a_imm, alu_b_imm;
+    wire [15:0] regv_1, regv_2, imm16;
     decode decode (
         .rst    (rst),
         .clk    (clk),
@@ -58,10 +60,17 @@ module proc (/*AUTOARG*/
         .alu_op (alu_op),
         .fcu_op (fcu_op),
 
+        .regv_1       (regv_1),
+        .regv_2       (regv_2),
+        .imm16        (imm16),
+
         .flow_ty(flow_ty),
         .next_pc_basic(next_pc_basic),
         .next_pc_taken(next_pc_taken),
 
+        .alu_b_imm(alu_b_imm),
+
+        .wb_op(wb_op),
         .wb_data(wb_data)
     );
 
@@ -69,18 +78,24 @@ module proc (/*AUTOARG*/
     wire flag; // current flag, used for Sxx instructions and conditional branches
     wire [15:0] alu_out;
     execute execute (
-        .err    (exec_err),
+        .err          (exec_err),
 
-        .flag   (flag),
-        .alu_op (alu_op),
-        .fcu_op (fcu_op),
+        .flag         (flag),
+        .alu_op       (alu_op),
+        .fcu_op       (fcu_op),
 
-        .flow_ty(flow_ty),
+        .regv_1       (regv_1),
+        .regv_2       (regv_2),
+        .imm16        (imm16),
+
+        .flow_ty      (flow_ty),
         .next_pc_basic(next_pc_basic),
         .next_pc_taken(next_pc_taken),
 
-        .alu_out(alu_out),
-        .next_pc(next_pc)
+        .alu_b_imm    (alu_b_imm),
+
+        .alu_out      (alu_out),
+        .next_pc      (next_pc)
     );
 
     // -- MEMORY

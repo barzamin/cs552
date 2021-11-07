@@ -7,15 +7,21 @@ module decode (
     input  wire [15:0] instr,
     input  wire [15:0] pc,
 
+    output reg  [1:0]  wb_op,
     input  wire [15:0] wb_data,
 
     output reg [3:0] alu_op,
-
     output reg [2:0] fcu_op,
 
-    output reg [1:0] flow_ty,
+    output wire [15:0] regv_1,
+    output wire [15:0] regv_2,
+    output reg  [15:0] imm16,
+
+    output reg  [1:0] flow_ty,
     output wire [15:0] next_pc_basic,
     output wire [15:0] next_pc_taken,
+
+    output reg alu_b_imm,
 
     output reg halt
 );
@@ -24,7 +30,6 @@ module decode (
 
     // -- register file
     wire [2:0] rf_write_reg, read1_reg, read2_reg;
-    wire [15:0] rf_write_data, regv_1, regv_2;
     reg rf_write_en;
     rf register_file (
         .clk       (clk),
@@ -62,16 +67,15 @@ module decode (
 
     // -- select logic for rf regselects
     reg instr_rformat; // 1 - rformat, 0 - everything else
-    reg rf_indexing_store;
+    reg writeto_rs;
     wire [2:0] rd_intermediate; // selected by format
     assign rd_intermediate = instr_rformat ? field_rd_rfmt : field_rd_ifmt;
     assign read1_reg = field_rs; // TODO
     assign read2_reg = field_rt_rfmt; // TODO
-    assign rf_write_reg = rd_intermediate; // todo rf_indexing_store  
+    assign rf_write_reg = writeto_rs ? field_rs : rd_intermediate;
 
     // -- imm16 computation
-    reg [15:0] imm16;
-    wire [1:0] immcode;
+    reg [1:0] immcode;
     localparam IMMC_ZIMM5 = 3'b000;
     localparam IMMC_SIMM5 = 3'b010;
     localparam IMMC_ZIMM8 = 3'b001;
@@ -82,8 +86,8 @@ module decode (
         IMMC_ZIMM5 : imm16 = {11'b0, imm5}; // zero extend
         IMMC_SIMM5 : imm16 = {{11{imm5[4]}}, imm5}; // sign extend
         IMMC_ZIMM8 : imm16 = {8'b0, imm8}; // zero extend
-        IMMC_ZIMM8 : imm16 = {{8{imm8[7]}}, imm8}; // sign extend
-        3'b1??     : imm16 = {{5{disp11[10]}}, disp11}; // sign extended displacement; IMMC_DISPL = 3'b100 but we don't-care two LSBs
+        IMMC_SIMM8 : imm16 = {{8{imm8[7]}}, imm8}; // sign extend
+        default    : imm16 = {{5{disp11[10]}}, disp11}; // sign extended displacement; IMMC_DISPL = 3'b100 but we don't-care
     endcase
 
     // -- PC computation
@@ -103,12 +107,16 @@ module decode (
     always @* begin
         // defaults to prevent latching. note some are arbitrary
         halt = 1'b0;
-        alu_op = ALU_PASS;
+        err = 1'b0;
+        alu_op = ALU_PSA;
         fcu_op = FCU_EQ;
         flow_ty = FLOW_BASIC;
-        err = 1'b0;
+        immcode = IMMC_ZIMM5;
         instr_rformat = 1'b0;
         rf_write_en = 1'b0;
+        writeto_rs = 1'b0;
+        alu_b_imm = 1'b0;
+        wb_op = WB_ALU;
 
         case (opcode)
             OP_HALT : begin
@@ -123,34 +131,50 @@ module decode (
             OP_ADDI : begin
                 alu_op = ALU_ADD;
                 rf_write_en = 1'b1;
+                immcode = IMMC_SIMM5;
+                alu_b_imm = 1'b1;
             end
             OP_SUBI : begin
                 alu_op = ALU_SUB;
                 rf_write_en = 1'b1;
+                immcode = IMMC_SIMM5;
+                alu_b_imm = 1'b1;
             end
             OP_XORI : begin
                 alu_op = ALU_XOR;
                 rf_write_en = 1'b1;
+                immcode = IMMC_ZIMM5;
+                alu_b_imm = 1'b1;
             end
             OP_ANDNI : begin
                 alu_op = ALU_ANDN;
                 rf_write_en = 1'b1;
+                immcode = IMMC_ZIMM5;
+                alu_b_imm = 1'b1;
             end
             OP_ROLI : begin
                 alu_op = ALU_ROL;
                 rf_write_en = 1'b1;
+                immcode = IMMC_ZIMM5;
+                alu_b_imm = 1'b1;
             end
             OP_SLLI : begin
                 alu_op = ALU_SLL;
                 rf_write_en = 1'b1;
+                immcode = IMMC_ZIMM5;
+                alu_b_imm = 1'b1;
             end
             OP_RORI : begin
                 alu_op = ALU_ROR;
                 rf_write_en = 1'b1;
+                immcode = IMMC_ZIMM5;
+                alu_b_imm = 1'b1;
             end
             OP_SRLI : begin
                 alu_op = ALU_SRL;
                 rf_write_en = 1'b1;
+                immcode = IMMC_ZIMM5;
+                alu_b_imm = 1'b1;
             end
 
             // non-immediate arithmetic
@@ -208,9 +232,20 @@ module decode (
             end
 
             OP_LBI : begin
-                // just directly loop back the immediate so we don't even have to get out of this stage
                 rf_write_en = 1'b1;
-                alu_op = ALU_PASS;
+                alu_op = ALU_PSB;
+                writeto_rs = 1'b1;
+
+                immcode = IMMC_SIMM8;
+                alu_b_imm = 1'b1;
+            end
+            OP_SLBI : begin
+                rf_write_en = 1'b1;
+                alu_op = ALU_SLBI;
+                writeto_rs = 1'b1;
+
+                immcode = IMMC_SIMM8;
+                alu_b_imm = 1'b1;
             end
         endcase
     end
