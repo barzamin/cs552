@@ -4,8 +4,8 @@ module cla4(
     input  wire [3:0] B,
     input  wire Cin,
     output wire Cout,
-    output blockP,
-    output blockG,
+    output wire blockP,
+    output wire blockG,
     output wire [3:0] S
 );
     wire [3:0] carries;
