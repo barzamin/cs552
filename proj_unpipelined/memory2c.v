@@ -72,8 +72,8 @@ module memory2c (data_out, data_in, addr, enable, wr, createdump, clk, rst);
       end
       else begin
          if (enable & wr) begin
-	        mem[addr] = data_in[15:8];       // The actual write
-	        mem[addr+1] = data_in[7:0];    // The actual write
+            mem[addr] = data_in[15:8];       // The actual write
+            mem[addr+1] = data_in[7:0];    // The actual write
             if ({1'b0, addr} > largest) largest = addr;  // avoid negative numbers
          end
          if (createdump) begin
