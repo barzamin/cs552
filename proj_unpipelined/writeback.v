@@ -1,3 +1,4 @@
+`default_nettype none
 module writeback (
     output wire err,
 
@@ -11,7 +12,7 @@ module writeback (
 );
     `include "ops.vh"
 
-    always @* casex (wb_op)
+    always @* case (wb_op)
         default : wb_data = alu_out; // WB_ALU
         WB_MEM  : wb_data = mem_out;
         WB_FLAG : wb_data = {15'b0, flag};

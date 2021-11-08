@@ -88,3 +88,10 @@ localparam FLOW_BASIC = 2'b00;
 localparam FLOW_ALU   = 2'b01;
 localparam FLOW_JUMP  = 2'b10;
 localparam FLOW_COND  = 2'b11;
+
+// -- immediate format selection
+localparam IMMC_ZIMM5 = 3'b000;
+localparam IMMC_SIMM5 = 3'b010;
+localparam IMMC_ZIMM8 = 3'b001;
+localparam IMMC_SIMM8 = 3'b011;
+localparam IMMC_DISPL = 3'b100;

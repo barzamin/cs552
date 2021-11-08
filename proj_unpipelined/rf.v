@@ -32,24 +32,24 @@ module rf(
     // assign read1_data = reg_data[read1_reg];
     // assign read2_data = reg_data[read2_reg];
     always @* case (read1_reg)
-        3'h0 : read1_data = reg_data_0;
-        3'h1 : read1_data = reg_data_1;
-        3'h2 : read1_data = reg_data_2;
-        3'h3 : read1_data = reg_data_3;
-        3'h4 : read1_data = reg_data_4;
-        3'h5 : read1_data = reg_data_5;
-        3'h6 : read1_data = reg_data_6;
-        3'h7 : read1_data = reg_data_7;
+        default : read1_data = reg_data_0; // 3'h0
+        3'h1    : read1_data = reg_data_1;
+        3'h2    : read1_data = reg_data_2;
+        3'h3    : read1_data = reg_data_3;
+        3'h4    : read1_data = reg_data_4;
+        3'h5    : read1_data = reg_data_5;
+        3'h6    : read1_data = reg_data_6;
+        3'h7    : read1_data = reg_data_7;
     endcase
     always @* case (read2_reg)
-        3'h0 : read2_data = reg_data_0;
-        3'h1 : read2_data = reg_data_1;
-        3'h2 : read2_data = reg_data_2;
-        3'h3 : read2_data = reg_data_3;
-        3'h4 : read2_data = reg_data_4;
-        3'h5 : read2_data = reg_data_5;
-        3'h6 : read2_data = reg_data_6;
-        3'h7 : read2_data = reg_data_7;
+        default : read2_data = reg_data_0; // 3'h0
+        3'h1    : read2_data = reg_data_1;
+        3'h2    : read2_data = reg_data_2;
+        3'h3    : read2_data = reg_data_3;
+        3'h4    : read2_data = reg_data_4;
+        3'h5    : read2_data = reg_data_5;
+        3'h6    : read2_data = reg_data_6;
+        3'h7    : read2_data = reg_data_7;
     endcase
 
     // demux logic to identify write outputs.

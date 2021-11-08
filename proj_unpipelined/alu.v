@@ -1,3 +1,4 @@
+`default_nettype none
 module alu(
     input wire [15:0] A,
     input wire [15:0] B,
@@ -60,7 +61,7 @@ module alu(
         prereverse = 1'b0;
         postreverse = 1'b0;
 
-        casex (op)
+        case (op)
             default : begin // ALU_PSA
                 out = A;
             end

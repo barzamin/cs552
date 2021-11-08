@@ -1,6 +1,7 @@
 module memory (
     input  wire clk,
     input  wire rst,
+    input  wire halt,
     output wire err,
 
     input  wire read_en,
@@ -22,7 +23,7 @@ module memory (
         .addr      (addr),
         .data_in   (write_data),
         .data_out  (read_data),
-        .createdump(1'b0) // don't need to dump (yet)
+        .createdump(halt) // dump on halt
     );
 
     assign err = 1'b0;

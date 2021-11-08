@@ -108,6 +108,7 @@ module proc (/*AUTOARG*/
         .clk       (clk),
         .rst       (rst),
         .err       (mem_err),
+        .halt      (halt),
 
         .addr      (alu_out), // we always use the ALU output to index M
         .read_en   (mem_read_en),

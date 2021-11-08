@@ -11,12 +11,10 @@
 
 module clkrst (clk, rst, err);
 
-    output clk;
-    output rst;
-    input  err;
+    output reg  clk;
+    output reg  rst;
+    input  wire err;
 
-    reg clk;
-    reg rst;
     integer cycle_count;
 
     initial begin
