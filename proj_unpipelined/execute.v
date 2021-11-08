@@ -37,6 +37,8 @@ module execute(
     // -- flag computation unit
     fcu fcu(
         .op       (fcu_op),
+        .A        (alu_A),
+        .B        (alu_B),
         .alu_out  (alu_out),
         .alu_carry(alu_carry),
         .flag     (flag)
