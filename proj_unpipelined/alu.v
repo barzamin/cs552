@@ -3,7 +3,9 @@ module alu(
     input wire [15:0] B,
     input wire [3:0] op,
     output reg [15:0] out,
-    output wire carryout
+    output wire zero,
+    output wire carryout,
+    output wire ovf
 );
     `include "ops.vh"
 
@@ -112,4 +114,13 @@ module alu(
             end
         endcase
     end
+
+    // -- auxiliary bits
+
+    // zero bit
+    assign zero = ~|out;
+
+    // (signed!) overflow bit
+    assign ovf = ( A_inp[15] &  B[15] & ~out[15])
+               | (~A_inp[15] & ~B[15] &  out[15]);
 endmodule

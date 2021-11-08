@@ -5,7 +5,7 @@ module tb_fcu();
     reg  [15:0] B;
     reg  [2:0]  op;
     wire flag;
-    wire        carryout;
+    wire        carryout, ovf, zero;
 
     reg         fail;
 
@@ -24,20 +24,22 @@ module tb_fcu();
 
     wire [15:0] alu_out;
     alu alu (
-        .A(A),
-        .B(B),
-        .op(ALU_SUB),
-        .out(alu_out),
-        .carryout(carryout)
+        .A       (A),
+        .B       (B),
+        .op      (ALU_SUB),
+        .out     (alu_out),
+        .carryout(carryout),
+        .zero    (zero),
+        .ovf     (ovf)
     );
 
     fcu dut (
-        .A        (A),
-        .B        (B),
-        .op       (op),
-        .alu_out  (alu_out),
-        .alu_carry(carryout),
-        .flag     (flag)
+        .op     (op),
+        .alu_out(alu_out),
+        .carry  (carryout),
+        .ovf    (ovf),
+        .zero   (zero),
+        .flag   (flag)
     );
 
     initial begin

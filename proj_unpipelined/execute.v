@@ -25,22 +25,24 @@ module execute(
     assign alu_B = alu_b_imm ? imm16 : regv_2;
 
     // -- alu
-    wire alu_carry; // wire from ALU to FCU
+    wire alu_zero, alu_ovf, alu_carry; // wires from ALU to FCU
     alu alu(
         .op      (alu_op),
         .A       (alu_A),
         .B       (alu_B),
         .out     (alu_out),
+        .zero    (alu_zero),
+        .ovf     (alu_ovf),
         .carryout(alu_carry)
     );
 
     // -- flag computation unit
     fcu fcu(
         .op       (fcu_op),
-        .A        (alu_A),
-        .B        (alu_B),
         .alu_out  (alu_out),
-        .alu_carry(alu_carry),
+        .zero     (alu_zero),
+        .ovf      (alu_ovf),
+        .carry    (alu_carry),
         .flag     (flag)
     );
 

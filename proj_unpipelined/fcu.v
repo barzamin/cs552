@@ -1,21 +1,15 @@
 module fcu( // Flag Computation Unit
-    input wire [15:0] A,
-    input wire [15:0] B,
     input wire [15:0] alu_out,
-    input wire alu_carry,
+    input wire carry,
+    input wire ovf,
+    input wire zero,
     input wire [2:0] op,
 
     output reg flag
 );
-    // zero bit computation
-    wire zero;
-    assign zero = ~|alu_out;
-
     // sign extraction
-    wire sgn, sgnA, sgnB;
+    wire sgn;
     assign sgn = alu_out[15];
-    assign sgnA = A[15];
-    assign sgnB = B[15];
 
 
     `include "ops.vh"
@@ -32,11 +26,11 @@ module fcu( // Flag Computation Unit
     // everything except FLU_CRY assumes aluop = ALU_SUB
     always @* casex (op)
         default : flag = zero; // FCU_EQ: -A + B = 0
-        FCU_NEQ : flag = !zero;
-        FCU_LT  : flag = !zero && !sgn; // not zero and -A + B positive => A < B
-        FCU_GT  : flag = sgn; // -A + B negative, nonzero => A > B
-        FCU_LE  : flag = !sgn; // -A + B positive or zero => A <= B
-        FCU_GE  : flag = sgn | zero; // -A + B negative or zero => A >= B
-        FCU_CRY : flag = alu_carry; // flag is set if we carry out
+        FCU_NEQ : flag = ~zero;
+        FCU_LT  : flag = ~(sgn ^ ovf) & ~zero;
+        FCU_GT  : flag =  (sgn ^ ovf);
+        FCU_LE  : flag = ~(sgn ^ ovf);
+        FCU_GE  : flag =  (sgn ^ ovf) | zero;
+        FCU_CRY : flag = carry; // flag is set if we carry out
     endcase
 endmodule
