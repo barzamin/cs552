@@ -16,25 +16,38 @@ module proc (/*AUTOARG*/
     // None of the above lines can be modified
     // but i did anyway. because karu wrote this in 2009 and apparently didn't think nettypes were important??
 
-    // OR all the err ouputs for every sub-module and assign it as this
-    // err output
-
-    // As desribed in the homeworks, use the err signal to trap corner
-    // cases that you think are illegal in your statemachines
+    // compute an error signal for debugging bad states
+    assign err = |{1'b0}; // TODO
 
 
     // IF -> ID -> EX -> MEM -> WB
 
+    // -- INSTRUCTION FETCH
     fetch fetch ();
 
+    // -- BOUNDARY: IF/ID
+    flop_if2id fl_if2id ();
+
+    // -- INSTRUCTION DECODE
     decode decode ();
 
+    // -- BOUNDARY: ID/EX
+    flop_id2ex fl_id2ex (); 
+
+    // -- EXECUTE
     execute execute ();
 
+    // -- BOUNDARY: EX/MEM
+    flop_ex2mem fl_ex2mem (); 
+
+    // -- MEMORY
     memory memory ();
 
+    // -- BOUNDARY: MEM/WB
+    flop_mem2wb fl_mem2wb (); 
+
+    // -- WRITEBACK
     writeback writeback ();
 
-    /* your code here */
 endmodule // proc
 // DUMMY LINE FOR REV CONTROL :0:
