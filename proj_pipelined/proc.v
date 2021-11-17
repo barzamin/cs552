@@ -22,6 +22,11 @@ module proc (/*AUTOARG*/
 
     // IF -> ID -> EX -> MEM -> WB
 
+    // ==== notes: ====
+    // 
+    // branches are predicted in IF, and resolved in EX;
+    // this means we will need to squash two instructions each time we mispredict a branch.
+
     // -- INSTRUCTION FETCH
     fetch fetch ();
 
