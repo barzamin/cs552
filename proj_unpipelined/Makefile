@@ -40,5 +40,8 @@ check: $(VCHECKS)
 	name-convention-check
 	cat *.vcheck.out
 
+project-unpipelined.tar:
+	tar cf $@ *.v *.vh *.py *.vcheck.out *.summary.log Makefile
+
 clean:
 	rm -rf *.img *.lst *.wlf *.vcd *.fst *.vcheck.out *.img *.img.dmem *.img.reg *.trace transcript archsim.* __work

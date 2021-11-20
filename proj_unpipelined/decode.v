@@ -68,9 +68,13 @@ module decode (
     assign field_rd_rfmt = instr[4:2];
     assign field_rd_ifmt = instr[7:5];
 
-    // -- select logic for rf regselects
-    wire instr_rformat; // 1 - rformat, 0 - everything else
-    wire link, writeto_rs, readfrom_rd;
+    // -- muxing logic for rf regselects
+    //    signals:
+    //     - instr_rformat: 1 - rformat, 0 - everything else. selects where we get rd from
+    //     - link: are we linking? if yes, writeback to r7
+    //     - writeto_rs: when high, write to rs instead of rd
+    //     - readfrom_rd: when high, read from rd on regv_2 instead of rt
+    wire instr_rformat, link, writeto_rs, readfrom_rd;
     wire [2:0] rd_intermediate; // selected by format
     assign rd_intermediate = instr_rformat ? field_rd_rfmt : field_rd_ifmt;
     assign read1_reg = field_rs;
@@ -78,7 +82,8 @@ module decode (
     assign rf_write_reg = link ? 3'h7 :
                     writeto_rs ? field_rs : rd_intermediate;
 
-    // -- imm16 computation
+    // -- imm16 select/computation.
+    //    by changing immcode (see ops.vh), we can set where the immediate is pulled from and how it's extended
     wire [2:0] immcode;
     always @* case (immcode)
         IMMC_ZIMM5 : imm16 = {11'b0, imm5}; // zero extend

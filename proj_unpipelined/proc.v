@@ -45,7 +45,7 @@ module proc (/*AUTOARG*/
     wire [1:0] flow_ty;
     wire [15:0] next_pc_basic, next_pc_taken;
     wire mem_read_en, mem_write_en;
-    wire alu_a_imm, alu_b_imm;
+    wire alu_b_imm;
     wire [15:0] regv_1, regv_2, imm16; // register and immediate data
     decode decode (
         .rst          (rst),
@@ -103,7 +103,6 @@ module proc (/*AUTOARG*/
 
     // -- MEMORY
     wire [15:0] mem_out;
-    wire [15:0] write_data; // TODO!
     memory memory (
         .clk       (clk),
         .rst       (rst),

@@ -14,7 +14,7 @@ module pccomputer(
         .Cout()
     );
 
-    // next pc if the branch was taken PC-relative
+    // next pc if a (pc-relative) branch was taken
     adder16 adder_taken (
         .A   (next_pc_basic),
         .B   (joffset),
