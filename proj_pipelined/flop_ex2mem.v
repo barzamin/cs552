@@ -1,6 +1,6 @@
 module flop_ex2mem(
     input wire clk,
-    input wire rst,
+    input wire rst
 );
 
 endmodule

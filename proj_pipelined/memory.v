@@ -2,6 +2,7 @@ module memory (
 	input  wire clk,
 	input  wire rst,
 	output wire err,
+    input  wire halt,
 
 	input  wire read_en,
 	input  wire write_en,
@@ -10,7 +11,7 @@ module memory (
 
 	input  wire [15:0] write_data,
 
-	output wire [15:0] read_data,
+	output wire [15:0] read_data
 );
     wire mem_en;
     assign mem_en = read_en | write_en; // enable if we're doing any access
