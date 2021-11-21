@@ -1,4 +1,3 @@
-`default_nettype none
 module fetch(
     input  wire clk,
     input  wire rst,
@@ -11,12 +10,13 @@ module fetch(
 );
     // pc register
     wire [15:0] next_pc;
+    wire [15:0] pc;
     register pc_reg (
         .clk       (clk),
         .rst       (rst),
         .write_en  (1'b1), // TODO : halt
         .write_data(next_pc),
-        .read_data (pc),
+        .read_data (pc)
     );
 
     // next pc if we don't branch
@@ -29,8 +29,8 @@ module fetch(
     );
 
     // which do we take?
-    assign prediction = 1'b0; // predict everything as NaT
-    assign next_pc = prediction ? next_pc_displaced : next_pc_basic;
+    // assign next_pc = prediction ? next_pc_displaced : next_pc_basic;
+    assign next_pc = next_pc_basic;
 
-    assign err = 0;
+    assign err = 1'b0;
 endmodule
