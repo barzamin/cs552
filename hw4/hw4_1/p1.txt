@@ -1,0 +1,54 @@
+note examples are separated with nops to flush the pipeline,
+keeping each example self-contained for pedagogic purposes.
+
+-------- example 1: EX->EX forwarding --------
+
+           t = | 0  1  2  3  4  5  6
+        --------------------------------
+xor r0, r2, r3 | F  D  X  M  W
+xor r1, r1, r0 |    F  D  X  M  W
+
+the second xor depends on the output (r0) of the first. the hazard unit detects this
+and forwards the result from EX to EX the next cycle (obtaining it from the EX/MEM register).
+
+-------- example 2: MEM->EX forwarding --------
+
+           t = | 0  1  2  3  4  5  6
+        --------------------------------
+xor r0, r2, r3 | F  D  X  M  W
+nop            |    F  D  X  M  W
+xor r4, r0, r1 |       F  D  X  M  W
+
+the second xor still depends on the output of the first, but there is an intervening instruction.
+we can still forward with the appropriate path; here, that is a MEM->EX forwarding path,
+obtaining the value of r0 from the MEM/WB register.
+
+
+-------- example 3: MEM->EX forwarding --------
+
+           t = | 0  1  2  3  4  5  6
+        --------------------------------
+ld r1, r0, 2   | F  D  X  M  W
+xor r3, r3, r1 |    F  D  X* X  M  W
+
+here, we load r1 <- M[r0 + 2]. the load has no hazard on r0, so it can proceed immediately.
+the xor depends on the output of the load, r1; it must obtain this value to move into EX.
+the processor identifies a hazard and stalls for one cycle waiting on the memory load.
+the result of the memory load is then forwarded from the MEM stage to EX stage, obtaining it from MEM/WB.
+
+note again that just because a pipeline is fully equipped with forwarding paths does not mean that it will never need to stall.
+here, if we had no MEM-EX path, we would have had to stall for two cycles instead of one, but we cannot avoid
+having at least one cycle of stall; we need time for the memory load to complete.
+
+-------- example 4: MEM->MEM forwarding --------
+
+           t = | 0  1  2  3  4  5  6
+        --------------------------------
+ld r0, r1, 0   | F  D  X  M  W
+sw r0, r2, 0   |    F  D  X  M  W
+
+like example 3, we have a load and another instruction dependent on its value;
+the ld produces r0 <- M[r1 + 0], and the sw consumes r0 to write back. however,
+this is a special case of *immediately storing the value we loaded*, and we can
+actually avoid a stall here by forwarding from MEM->MEM. this is accomplished by
+obtaining the value of r0 from the MEM/WB register in cycle 4.

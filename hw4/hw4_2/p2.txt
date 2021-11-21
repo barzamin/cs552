@@ -1,0 +1,57 @@
+note examples are separated with nops to flush the pipeline,
+keeping each example self-contained for pedagogic purposes.
+
+-------- example 1: a bnez almost-always taken --------
+in this example, we implement (approximately)
+```c
+do {
+    r2 += r1;
+    r0++;
+} while (r0 != 0)
+```
+
+we implement this by running the inner basic block and then branching back
+to the top if r0 != 0, using bnez. this results in the branch being taken every
+turn of the loop except the last.
+
+in the case that a always-not-taken branch predictor is used, we will incur a
+misprediction penalty *every turn of the loop*. always-not-taken is a very
+classic MIPS thing to implement. with a delay slot, it's fine - you
+never waste cycles, because the one stall cycle for branch resolution in ID is
+occupied with the delay slot. but without a delay slot, it guarantees that most
+branches will incur, with high probability, a mispredict penalty.
+
+-------- example 2: a beqz almost-never taken --------
+in this example, we implement (approximately)
+```c
+while (r0 != 0) {
+    r2 += r1;
+    r0++;
+}
+```
+
+this is a very similar loop to the previous one (less one iteration), but now
+an always-not-taken bp is ok! this is because our implementation tests if r0 is *zero*
+at the top of the loop body, and jumps out to an exit point if so; otherwise, execution
+proceeds down the inner block until hitting an unconditional jump back to the top. since
+the only conditional branch is only taken once for the loop's lifetime, an always-not-taken
+branch predictor would actually work fine here.
+
+and this is an argument people made in the past: a compiler can transform loops of the former style
+into the latter, or vice versa, to suit your branch predictor, so why bother having a better one?
+except that most loop flow is not this simple in reality, and most compilers do not want to care about
+doing branch prediction for you, since it is far more efficient and flexible to instrument branches at runtime.
+
+
+
+even a direct-mapped table with single-bit saturating predictions would've worked fine
+on both of these examples with no compile-time transformation needed.
+
+
+note that branch prediction will not always take one cycle, in general.
+ideally we could predict and compute everything in IF and immediately load
+the next instruction we care about, but even if we could cram our predictor into
+IF, we must also know the target to branch to, which requires, at minimum, doing
+an add (likely in ID in MIPS) to compute next_pc + offset. with more complicated branches
+which need register data, the delay to branch could be even longer, even if we have a very
+simple system which can complete take/no-take prediction in one cycle.
