@@ -1,3 +1,4 @@
+`default_nettype none
 module decode (
 	input  wire clk,
 	input  wire rst,
@@ -15,14 +16,15 @@ module decode (
     // outputs for downstream stages
     output wire [3:0]  alu_op,
 
-    output wire [2:0]  rA,
-    output wire [2:0]  rB,
-    output wire [15:0] rA_v,
-    output wire [15:0] rB_v,
+    output wire [2:0]  rX,  // register number for reg file X sel
+    output wire [2:0]  rY,  // register number for reg file Y sel
+    output wire [2:0]  rO,  // register to write back into
+    output wire [15:0] vX,  // value from rf for rX
+    output wire [15:0] vY,  // value from rf for rY
 
-    output reg  [15:0] imm16,
+    output reg  [15:0] imm16, // sign/zero-extended imm or displacement
 
-    output wire [2:0]  rDest
+    output wire alu_b_imm     // when 1, alu b input is muxed to imm16 instead of vY
 );
     // (nearly) all control op defs
     `include "ops.vh"
@@ -57,7 +59,7 @@ module decode (
     endcase
 
     // -- register file
-    wire [2:0] read1_reg, read2_reg, write_reg;
+    wire [2:0] write_reg;
     rf register_file (
         .clk       (clk),
         .rst       (rst),
@@ -66,11 +68,11 @@ module decode (
         .write_reg (wb_reg),
         .write_data(wb_data),
 
-        .read1_reg (read1_reg),
-        .read1_data(rA_v),
+        .read1_reg (rX),
+        .read1_data(vX),
 
-        .read2_reg (read2_reg),
-        .read2_data(rB_v)
+        .read2_reg (rY),
+        .read2_data(vY)
     );
 
     // -- muxing logic to generate rf register select signals
@@ -78,13 +80,13 @@ module decode (
     //     - instr_rformat: 1 - rformat, 0 - everything else. selects where we get rd from
     //     - link: are we linking? if yes, writeback to r7
     //     - writeto_rs: when high, write to rs instead of rd
-    //     - readfrom_rd: when high, read from rd on rB_v instead of rt
+    //     - readfrom_rd: when high, read from rd on rY instead of rt
     wire instr_rformat, link, writeto_rs, readfrom_rd;
     wire [2:0] rd_intermediate; // selected by format
     assign rd_intermediate = instr_rformat ? field_rd_rfmt : field_rd_ifmt;
-    assign read1_reg = field_rs;
-    assign read2_reg = readfrom_rd ? rd_intermediate : field_rt_rfmt;
-    assign rDest  = link ? 3'h7 :
+    assign rX = field_rs;
+    assign rY = readfrom_rd ? rd_intermediate : field_rt_rfmt;
+    assign rO  = link ? 3'h7 :
                     writeto_rs ? field_rs : rd_intermediate;
 
 
@@ -98,6 +100,9 @@ module decode (
         .writeto_rs   (writeto_rs),
         .readfrom_rd  (readfrom_rd),
         .link         (link),
+
+
+        .alu_b_imm    (alu_b_imm),
 
         .err(control_err)
     );
