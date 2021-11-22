@@ -2,15 +2,19 @@ module execute (
     output wire err,
 
     input  wire [3:0]  alu_op,
+    input  wire        alu_b_imm,
 
-    input  wire [15:0] rA_v,
-    input  wire [15:0] rB_v,
+    input  wire [15:0] vX,
+    input  wire [15:0] vY,
     input  wire [15:0] imm16
 );
 
+    wire [15:0] alu_A, alu_B;
+
+    assign alu_A = vX;
+    assign alu_B = alu_b_imm ? imm16 : vY;
+
     wire alu_zero, alu_ovf, alu_carry;
-    wire [15:0] alu_A;
-    wire [15:0] alu_B;
     wire [15:0] alu_out;
     alu alu(
         .op      (alu_op),
