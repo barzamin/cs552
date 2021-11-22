@@ -2,8 +2,13 @@ module flop_id2ex(
     input  wire clk,
     input  wire rst,
 
+    input  wire i_halt,
+    output wire o_halt,
+
     input  wire  [3:0] i_alu_op,
     output wire  [3:0] o_alu_op,
+    input  wire        i_alu_b_imm,
+    output wire        o_alu_b_imm,
 
     input  wire [2:0] i_rX,
     output wire [2:0] o_rX,
@@ -23,6 +28,11 @@ module flop_id2ex(
     // TODO !!!
     wire write_en;
     assign write_en = 1'b1;
+
+    register #(.WIDTH(1)) r_halt (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_halt), .read_data(o_halt)
+    );
 
     register #(.WIDTH(4)) r_alu_op (
         .clk(clk), .rst(rst), .write_en(write_en),

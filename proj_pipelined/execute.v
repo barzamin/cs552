@@ -6,16 +6,16 @@ module execute (
 
     input  wire [15:0] vX,
     input  wire [15:0] vY,
-    input  wire [15:0] imm16
-);
+    input  wire [15:0] imm16,
 
+    output wire [15:0] alu_out
+);
     wire [15:0] alu_A, alu_B;
 
     assign alu_A = vX;
     assign alu_B = alu_b_imm ? imm16 : vY;
 
     wire alu_zero, alu_ovf, alu_carry;
-    wire [15:0] alu_out;
     alu alu(
         .op      (alu_op),
         .A       (alu_A),

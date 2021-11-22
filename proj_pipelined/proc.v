@@ -59,6 +59,7 @@ module proc (/*AUTOARG*/
     );
 
     // -- INSTRUCTION DECODE
+    wire ID_halt;
     wire [15:0] ID_vX, ID_vY;
     wire [2:0]  ID_rX, ID_rY, ID_rO;
     wire [15:0] ID_imm16;
@@ -68,6 +69,8 @@ module proc (/*AUTOARG*/
         .clk          (clk),
         .rst          (rst),
         .err          (ID_err),
+
+        .halt         (ID_halt),
 
         .next_pc_basic(ID_next_pc_basic),
         .instr        (ID_instr),
@@ -93,52 +96,66 @@ module proc (/*AUTOARG*/
     wire [2:0]  ID2EX_rX, ID2EX_rY, ID2EX_rO;
     wire [15:0] ID2EX_vX, ID2EX_vY;
     wire [15:0] ID2EX_imm16;
-    wire ID2EX_alu_b_imm;
+    wire        ID2EX_alu_b_imm;
+    wire        ID2EX_halt;
 
     flop_id2ex fl_id2ex (
-        .clk(clk),
-        .rst(rst),
+        .clk        (clk),
+        .rst        (rst),
 
-        .i_alu_op(ID_alu_op),
-        .o_alu_op(ID2EX_alu_op),
+        .i_halt     (ID_halt),
+        .o_halt     (ID2EX_halt),
 
-
+        .i_alu_op   (ID_alu_op),
+        .o_alu_op   (ID2EX_alu_op),
         .i_alu_b_imm(ID_alu_b_imm),
         .o_alu_b_imm(ID2EX_alu_b_imm),
+
         .i_imm16    (ID_imm16),
         .o_imm16    (ID2EX_imm16),
 
         // rX, rY, rO
-        .i_rX(ID_rX),
-        .o_rX(ID2EX_rX),
-        .i_rY(ID_rY),
-        .o_rY(ID2EX_rY),
-        .i_rO(ID_rO),
-        .o_rO(ID2EX_rO),
+        .i_rX       (ID_rX),
+        .o_rX       (ID2EX_rX),
+        .i_rY       (ID_rY),
+        .o_rY       (ID2EX_rY),
+        .i_rO       (ID_rO),
+        .o_rO       (ID2EX_rO),
 
         // vX, vY
-        .i_vX(ID_vX),
-        .o_vX(ID2EX_vX),
-        .i_vY(ID_vY),
-        .o_vY(ID2EX_vY)
+        .i_vX       (ID_vX),
+        .o_vX       (ID2EX_vX),
+        .i_vY       (ID_vY),
+        .o_vY       (ID2EX_vY)
     );
 
     // -- EXECUTE
+    wire [15:0] EX_alu_out;
     execute execute (
-        .err   (EX_err),
+        .err      (EX_err),
 
         .alu_op   (ID2EX_alu_op),
         .alu_b_imm(ID2EX_alu_b_imm),
 
-        .vX    (ID2EX_vX),
-        .vY    (ID2EX_vY),
-        .imm16 (ID2EX_imm16)
+        .vX       (ID2EX_vX),
+        .vY       (ID2EX_vY),
+        .imm16    (ID2EX_imm16),
+
+        .alu_out  (EX_alu_out)
     );
 
     // -- BOUNDARY: EX/MEM
+    wire EX2MEM_halt;
+    wire [15:0] EX2MEM_alu_out;
     flop_ex2mem fl_ex2mem (
-        .clk(clk),
-        .rst(rst)
+        .clk   (clk),
+        .rst   (rst),
+
+        .i_halt(ID2EX_halt),
+        .o_halt(EX2MEM_halt),
+
+        .i_alu_out(EX_alu_out),
+        .o_alu_out(EX2MEM_alu_out)
     );
 
     // -- MEMORY
@@ -147,12 +164,12 @@ module proc (/*AUTOARG*/
         .rst       (rst),
         .err       (MEM_err),
 
-        .addr      (addr),
+        // .addr      (addr),
 
-        .read_en   (read_en),
-        .read_data (read_data),
-        .write_en  (write_en),
-        .write_data(write_data),
+        // .read_en   (read_en),
+        // .read_data (read_data),
+        // .write_en  (write_en),
+        // .write_data(write_data),
 
 
         .halt      (EX2MEM_halt)
