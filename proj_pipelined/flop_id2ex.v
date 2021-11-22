@@ -5,13 +5,20 @@ module flop_id2ex(
     input  wire  [3:0] i_alu_op,
     output wire  [3:0] o_alu_op,
 
-    input  wire [15:0] i_imm16,
-    output wire [15:0] o_imm16,
+    input  wire [2:0] i_rX,
+    output wire [2:0] o_rX,
+    input  wire [2:0] i_rY,
+    output wire [2:0] o_rY,
+    input  wire [2:0] i_rO,
+    output wire [2:0] o_rO,
 
-    input  wire [15:0] i_rA_v,
-    output wire [15:0] o_rA_v,
-    input  wire [15:0] i_rB_v,
-    output wire [15:0] o_rB_v
+    input  wire [15:0] i_vX,
+    output wire [15:0] o_vX,
+    input  wire [15:0] i_vY,
+    output wire [15:0] o_vY,
+
+    input  wire [15:0] i_imm16,
+    output wire [15:0] o_imm16
 );
     // TODO !!!
     wire write_en;
@@ -22,18 +29,37 @@ module flop_id2ex(
         .write_data(i_alu_op), .read_data(o_alu_op)
     );
 
+    // -- register numbers
+    register #(.WIDTH(3)) r_rX (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_rX), .read_data(o_rX)
+    );
+
+    register #(.WIDTH(3)) r_rY (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_rY), .read_data(o_rY)
+    );
+
+
+    register #(.WIDTH(3)) r_rO (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_rO), .read_data(o_rO)
+    );
+
+    // -- register values
+    register #(.WIDTH(16)) r_vX (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_vX), .read_data(o_vX)
+    );
+
+    register #(.WIDTH(16)) r_vY (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_vY), .read_data(o_vY)
+    );
+
+    // -- immediate value
     register #(.WIDTH(16)) r_imm16 (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_imm16), .read_data(o_imm16)
-    );
-
-    register #(.WIDTH(16)) r_rA_v (
-        .clk(clk), .rst(rst), .write_en(write_en),
-        .write_data(i_rA_v), .read_data(o_rA_v)
-    );
-
-    register #(.WIDTH(16)) r_rB_v (
-        .clk(clk), .rst(rst), .write_en(write_en),
-        .write_data(i_rB_v), .read_data(o_rB_v)
     );
 endmodule
