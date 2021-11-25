@@ -16,6 +16,11 @@ module flop_id2ex(
     input  wire  [1:0] i_wb_op,
     output wire  [1:0] o_wb_op,
 
+    input  wire i_dmem_ren,
+    output wire o_dmem_ren,
+    input  wire i_dmem_wen,
+    output wire o_dmem_wen,
+
     input  wire [2:0] i_rX,
     output wire [2:0] o_rX,
     input  wire [2:0] i_rY,
@@ -53,6 +58,15 @@ module flop_id2ex(
     register #(.WIDTH(2)) r_wb_op (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_wb_op), .read_data(o_wb_op)
+    );
+
+    register #(.WIDTH(1)) r_dmem_ren (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_dmem_ren), .read_data(o_dmem_ren)
+    );
+    register #(.WIDTH(1)) r_dmem_wen (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_dmem_wen), .read_data(o_dmem_wen)
     );
 
     // -- register numbers

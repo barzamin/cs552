@@ -21,8 +21,8 @@ module control(
     output reg [2:0] immcode,
     output reg alu_b_imm,
 
-    output reg mem_read_en,
-    output reg mem_write_en
+    output reg dmem_ren,
+    output reg dmem_wen
 );
     `include "ops.vh"
 
@@ -46,8 +46,8 @@ module control(
         immcode = IMMC_ZIMM5;
         alu_b_imm = 1'b0;
 
-        mem_write_en = 1'b0;
-        mem_read_en  = 1'b0;
+        dmem_wen = 1'b0;
+        dmem_ren  = 1'b0;
 
         case (opcode)
             OP_HALT : begin
@@ -266,7 +266,7 @@ module control(
 
             // -- memory load and store
             OP_ST : begin
-                mem_write_en = 1'b1;
+                dmem_wen = 1'b1;
 
                 // compute address as
                 //  alu_out <- Rs + sext(imm5)
@@ -277,7 +277,7 @@ module control(
                 readfrom_rd = 1'b1;
             end
             OP_LD : begin
-                mem_read_en = 1'b1;
+                dmem_ren = 1'b1;
 
                 // compute address as
                 //  alu_out <- Rs + sext(imm5)
@@ -291,7 +291,7 @@ module control(
 
             // weird one! "store and update"; computes address as Rs + sext(imm5) but writes that back to Rs!
             OP_STU : begin
-                mem_write_en = 1'b1;
+                dmem_wen = 1'b1;
 
                 // compute address as
                 //  alu_out <- Rs + sext(imm5)

@@ -67,7 +67,7 @@ module proc (/*AUTOARG*/
     wire        ID_alu_b_imm;
     wire [2:0]  ID_fcu_op;
     wire [1:0]  ID_wb_op;
-    wire        ID_dmem_wen, ID_dmem_rden;
+    wire        ID_dmem_ren, ID_dmem_wen;
     // -- loopbacks
     wire        WB_rf_wen;
     wire [2:0]  WB_rO;
@@ -89,15 +89,14 @@ module proc (/*AUTOARG*/
         .vY           (ID_vY),
         .imm16        (ID_imm16),
 
-        // .wb_rf_en     (wb_rf_en),
-        // .wb_reg       (wb_reg),
-        // .wb_data      (wb_data),
-
         .alu_op       (ID_alu_op),
         .alu_b_imm    (ID_alu_b_imm),
 
         .fcu_op       (ID_fcu_op),
         .wb_op        (ID_wb_op),
+
+        .dmem_ren     (ID_dmem_ren),
+        .dmem_wen     (ID_dmem_wen),
 
         // -- writeback loopbacks for write port on rf
         .WB_rf_wen    (WB_rf_wen),
@@ -117,6 +116,8 @@ module proc (/*AUTOARG*/
 
     wire [1:0]  ID2EX_wb_op;
 
+    wire        ID2EX_dmem_wen, ID2EX_dmem_ren;
+
     flop_id2ex fl_id2ex (
         .clk        (clk),
         .rst        (rst),
@@ -134,6 +135,11 @@ module proc (/*AUTOARG*/
 
         .i_wb_op    (ID_wb_op),
         .o_wb_op    (ID2EX_wb_op),
+
+        .i_dmem_ren (   ID_dmem_ren),
+        .o_dmem_ren (ID2EX_dmem_ren),
+        .i_dmem_wen (   ID_dmem_wen),
+        .o_dmem_wen (ID2EX_dmem_wen),
 
         .i_imm16    (ID_imm16),
         .o_imm16    (ID2EX_imm16),
@@ -193,7 +199,6 @@ module proc (/*AUTOARG*/
 
         .i_dmem_ren(EX2MEM_dmem_ren),
         .o_dmem_ren(EX2MEM_dmem_ren),
-
         .i_dmem_wen(EX2MEM_dmem_wen),
         .o_dmem_wen(EX2MEM_dmem_wen)
     );

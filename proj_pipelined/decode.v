@@ -20,6 +20,9 @@ module decode (
 
     output wire [1:0]  wb_op,
 
+    output wire dmem_ren,
+    output wire dmem_wen,
+
     output wire [2:0]  rX,  // register number for reg file X sel
     output wire [2:0]  rY,  // register number for reg file Y sel
     output wire [2:0]  rO,  // register to write back into
@@ -111,6 +114,9 @@ module decode (
 
         .fcu_op       (fcu_op),
         .wb_op        (wb_op),
+
+        .dmem_ren     (dmem_ren),
+        .dmem_wen     (dmem_wen),
 
         .err(control_err)
     );
