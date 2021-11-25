@@ -65,8 +65,6 @@ module decode (
     endcase
 
     // -- register file
-    wire [2:0] write_reg;
-    wire [15:0] rf_read1_data, rf_read2_data;
     rf_bypassed register_file (
         .clk       (clk),
         .rst       (rst),
@@ -76,10 +74,10 @@ module decode (
         .write_data(WB_wb_data),
 
         .read1_reg (rX),
-        .read1_data(rf_read1_data),
+        .read1_data(vX),
 
         .read2_reg (rY),
-        .read2_data(rf_read2_data)
+        .read2_data(vY)
     );
 
     // -- muxing logic to generate rf register select signals
