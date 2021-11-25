@@ -10,6 +10,12 @@ module flop_id2ex(
     input  wire        i_alu_b_imm,
     output wire        o_alu_b_imm,
 
+    input  wire  [2:0] i_fcu_op,
+    output wire  [2:0] o_fcu_op,
+
+    input  wire  [1:0] i_wb_op,
+    output wire  [1:0] o_wb_op,
+
     input  wire [2:0] i_rX,
     output wire [2:0] o_rX,
     input  wire [2:0] i_rY,
@@ -37,6 +43,16 @@ module flop_id2ex(
     register #(.WIDTH(4)) r_alu_op (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_alu_op), .read_data(o_alu_op)
+    );
+
+    register #(.WIDTH(3)) r_fcu_op (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_fcu_op), .read_data(o_fcu_op)
+    );
+
+    register #(.WIDTH(2)) r_wb_op (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_wb_op), .read_data(o_wb_op)
     );
 
     // -- register numbers

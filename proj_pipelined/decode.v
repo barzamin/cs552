@@ -9,12 +9,16 @@ module decode (
     input  wire [15:0] next_pc_basic,
 
     // loopback from MEM/WB
-    input  wire        wb_rf_en,
-    input  wire [2:0]  wb_reg,
-    input  wire [15:0] wb_data,
+    input  wire        WB_rf_wen,
+    input  wire [2:0]  WB_rO,
+    input  wire [15:0] WB_wb_data,
 
     // outputs for downstream stages
     output wire [3:0]  alu_op,
+    output wire        alu_b_imm, // when 1, alu b input is muxed to imm16 instead of vY
+    output wire [2:0]  fcu_op,
+
+    output wire [1:0]  wb_op,
 
     output wire [2:0]  rX,  // register number for reg file X sel
     output wire [2:0]  rY,  // register number for reg file Y sel
@@ -22,9 +26,8 @@ module decode (
     output wire [15:0] vX,  // value from rf for rX
     output wire [15:0] vY,  // value from rf for rY
 
-    output reg  [15:0] imm16, // sign/zero-extended imm or displacement
+    output reg  [15:0] imm16 // sign/zero-extended imm or displacement
 
-    output wire alu_b_imm     // when 1, alu b input is muxed to imm16 instead of vY
 );
     // (nearly) all control op defs
     `include "ops.vh"
@@ -60,19 +63,20 @@ module decode (
 
     // -- register file
     wire [2:0] write_reg;
-    rf register_file (
+    wire [15:0] rf_read1_data, rf_read2_data;
+    rf_bypassed register_file (
         .clk       (clk),
         .rst       (rst),
 
-        .write_en  (wb_rf_en),
-        .write_reg (wb_reg),
-        .write_data(wb_data),
+        .write_en  (WB_rf_wen),
+        .write_reg (WB_rO),
+        .write_data(WB_wb_data),
 
         .read1_reg (rX),
-        .read1_data(vX),
+        .read1_data(rf_read1_data),
 
         .read2_reg (rY),
-        .read2_data(vY)
+        .read2_data(rf_read2_data)
     );
 
     // -- muxing logic to generate rf register select signals
@@ -86,8 +90,8 @@ module decode (
     assign rd_intermediate = instr_rformat ? field_rd_rfmt : field_rd_ifmt;
     assign rX = field_rs;
     assign rY = readfrom_rd ? rd_intermediate : field_rt_rfmt;
-    assign rO  = link ? 3'h7 :
-                    writeto_rs ? field_rs : rd_intermediate;
+    assign rO = link ? 3'h7 :
+          writeto_rs ? field_rs : rd_intermediate;
 
 
     // -- opcode decoding/control logic
@@ -100,9 +104,13 @@ module decode (
         .writeto_rs   (writeto_rs),
         .readfrom_rd  (readfrom_rd),
         .link         (link),
+        .immcode      (immcode),
 
-
+        .alu_op       (alu_op),
         .alu_b_imm    (alu_b_imm),
+
+        .fcu_op       (fcu_op),
+        .wb_op        (wb_op),
 
         .err(control_err)
     );
