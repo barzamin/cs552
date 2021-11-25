@@ -50,6 +50,11 @@ module flop_id2ex(
         .write_data(i_alu_op), .read_data(o_alu_op)
     );
 
+    register #(.WIDTH(1)) r_alu_b_imm (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_alu_b_imm), .read_data(o_alu_b_imm)
+    );
+
     register #(.WIDTH(3)) r_fcu_op (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_fcu_op), .read_data(o_fcu_op)
