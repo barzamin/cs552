@@ -31,7 +31,6 @@ module proc (/*AUTOARG*/
     // !!!! TODO !!!!
     // - rethink naming conventions
 
-
     // -- INSTRUCTION FETCH
     wire [15:0] IF_next_pc_basic;
     wire [15:0] IF_instr;
@@ -77,7 +76,7 @@ module proc (/*AUTOARG*/
         .rst          (rst),
         .err          (ID_err),
 
-        // .halt         (ID_halt),
+        .halt         (ID_halt),
 
         .next_pc_basic(ID_next_pc_basic),
         .instr        (ID_instr),

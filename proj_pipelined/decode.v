@@ -31,6 +31,7 @@ module decode (
 
     output reg  [15:0] imm16 // sign/zero-extended imm or displacement
 
+    output wire halt
 );
     // (nearly) all control op defs
     `include "ops.vh"
@@ -115,6 +116,9 @@ module decode (
 
         .dmem_ren     (dmem_ren),
         .dmem_wen     (dmem_wen),
+        .rf_write_en  (rf_wen),
+
+        .halt         (halt),
 
         .err(control_err)
     );
