@@ -28,6 +28,18 @@ module fetch(
         .Cout()
     );
 
+    // -- imem
+    memory2c imem (
+        .clk       (clk),
+        .rst       (rst),
+        .wr        (1'b0), // imem is immutable
+        .data_in   (16'h0), // ibid
+        .createdump(1'b0), // never need to dump
+        .addr      (pc),
+        .enable    (1'b1),
+        .data_out  (instr)
+    );
+
     // which do we take?
     // assign next_pc = prediction ? next_pc_displaced : next_pc_basic;
     assign next_pc = next_pc_basic;
