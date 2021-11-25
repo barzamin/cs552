@@ -67,6 +67,7 @@ module proc (/*AUTOARG*/
     wire [2:0]  ID_fcu_op;
     wire [1:0]  ID_wb_op;
     wire        ID_dmem_ren, ID_dmem_wen;
+    wire        ID_rf_wen;
     // -- loopbacks
     wire        WB_rf_wen;
     wire [2:0]  WB_rO;
@@ -90,8 +91,9 @@ module proc (/*AUTOARG*/
 
         .alu_op       (ID_alu_op),
         .alu_b_imm    (ID_alu_b_imm),
-
         .fcu_op       (ID_fcu_op),
+
+        .rf_wen       (ID_rf_wen),
         .wb_op        (ID_wb_op),
 
         .dmem_ren     (ID_dmem_ren),
@@ -116,6 +118,7 @@ module proc (/*AUTOARG*/
     wire [1:0]  ID2EX_wb_op;
 
     wire        ID2EX_dmem_wen, ID2EX_dmem_ren;
+    wire        ID2EX_rf_wen;
 
     flop_id2ex fl_id2ex (
         .clk        (clk),
@@ -132,6 +135,8 @@ module proc (/*AUTOARG*/
         .i_fcu_op   (ID_fcu_op),
         .o_fcu_op   (ID2EX_fcu_op),
 
+        .i_rf_wen   (ID_rf_wen),
+        .o_rf_wen   (ID2EX_rf_wen),
         .i_wb_op    (ID_wb_op),
         .o_wb_op    (ID2EX_wb_op),
 
@@ -180,6 +185,8 @@ module proc (/*AUTOARG*/
     wire [15:0] EX2MEM_alu_out;
     wire [15:0] EX2MEM_vY;
     wire EX2MEM_dmem_ren, EX2MEM_dmem_wen;
+    wire [2:0] EX2MEM_rO;
+    wire EX2MEM_rf_wen;
     flop_ex2mem fl_ex2mem (
         .clk   (clk),
         .rst   (rst),
@@ -196,10 +203,15 @@ module proc (/*AUTOARG*/
         .i_vY(ID2EX_vY), // todo use forwarded ver
         .o_vY(EX2MEM_vY),
 
-        .i_dmem_ren(EX2MEM_dmem_ren),
+        .i_dmem_ren(ID2EX_dmem_ren),
         .o_dmem_ren(EX2MEM_dmem_ren),
-        .i_dmem_wen(EX2MEM_dmem_wen),
-        .o_dmem_wen(EX2MEM_dmem_wen)
+        .i_dmem_wen(ID2EX_dmem_wen),
+        .o_dmem_wen(EX2MEM_dmem_wen),
+
+        .i_rO(ID2EX_rO),
+        .o_rO(EX2MEM_rO),
+        .i_rf_wen(ID2EX_rf_wen),
+        .o_rf_wen(EX2MEM_rf_wen)
     );
 
     // -- MEMORY
@@ -216,7 +228,6 @@ module proc (/*AUTOARG*/
         .write_en  (EX2MEM_dmem_wen),
         .write_data(EX2MEM_vY),
 
-
         .halt      (EX2MEM_halt)
     );
 
@@ -226,6 +237,8 @@ module proc (/*AUTOARG*/
     wire [15:0] MEM2WB_dmem_out;
     wire [15:0] MEM2WB_link_pc; // todo
     wire        MEM2WB_flag;
+    // wire [2:0]  MEM2WB_rO;
+    // wire        MEM2WB_rf_wen;
     flop_mem2wb fl_mem2wb (
         .clk(clk),
         .rst(rst),
@@ -237,7 +250,12 @@ module proc (/*AUTOARG*/
         .o_dmem_out(MEM2WB_dmem_out),
 
         .i_alu_out(EX2MEM_alu_out),
-        .o_alu_out(MEM2WB_alu_out)
+        .o_alu_out(MEM2WB_alu_out),
+
+        .i_rO(EX2MEM_rO),
+        .o_rO(WB_rO),
+        .i_rf_wen(EX2MEM_rf_wen),
+        .o_rf_wen(WB_rf_wen)
     );
 
     // -- WRITEBACK

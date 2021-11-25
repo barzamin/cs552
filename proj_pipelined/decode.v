@@ -23,13 +23,15 @@ module decode (
     output wire dmem_ren,
     output wire dmem_wen,
 
+    output wire rf_wen,
+
     output wire [2:0]  rX,  // register number for reg file X sel
     output wire [2:0]  rY,  // register number for reg file Y sel
     output wire [2:0]  rO,  // register to write back into
     output wire [15:0] vX,  // value from rf for rX
     output wire [15:0] vY,  // value from rf for rY
 
-    output reg  [15:0] imm16 // sign/zero-extended imm or displacement
+    output reg  [15:0] imm16, // sign/zero-extended imm or displacement
 
     output wire halt
 );
