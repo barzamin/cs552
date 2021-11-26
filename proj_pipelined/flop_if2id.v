@@ -2,16 +2,14 @@ module flop_if2id(
     input  wire clk,
     input  wire rst,
 
+    input  wire write_en,
+
     input  wire [15:0] i_instr,
     output wire [15:0] o_instr,
 
     input  wire [15:0] i_next_pc_basic,
     output wire [15:0] o_next_pc_basic
 );
-    // TODO !!!
-    wire write_en;
-    assign write_en = 1'b1;
-
     // delay rst so we don't halt on all-zero IF flops
     wire if_valid;
     register #(.WIDTH(1)) r_if_valid (

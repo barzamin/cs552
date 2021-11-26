@@ -2,6 +2,7 @@ module fetch(
     input  wire clk,
     input  wire rst,
     output wire err,
+    input  wire freeze_pc,
 
     input  wire [15:0] next_pc_displaced, // coming in from decode
 
@@ -14,7 +15,7 @@ module fetch(
     register pc_reg (
         .clk       (clk),
         .rst       (rst),
-        .write_en  (1'b1), // TODO : halt
+        .write_en  (~freeze_pc),
         .write_data(next_pc),
         .read_data (pc)
     );
@@ -32,9 +33,9 @@ module fetch(
     memory2c imem (
         .clk       (clk),
         .rst       (rst),
-        .wr        (1'b0), // imem is immutable
+        .wr        (1'b0),  // imem is immutable
         .data_in   (16'h0), // ibid
-        .createdump(1'b0), // never need to dump
+        .createdump(1'b0),  // never need to dump
         .addr      (pc),
         .enable    (1'b1),
         .data_out  (instr)

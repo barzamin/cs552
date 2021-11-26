@@ -1,6 +1,7 @@
 module flop_id2ex(
     input  wire clk,
     input  wire rst,
+    input  wire bubble,
 
     input  wire i_halt,
     output wire o_halt,
@@ -44,7 +45,7 @@ module flop_id2ex(
 
     register #(.WIDTH(1)) r_halt (
         .clk(clk), .rst(rst), .write_en(write_en),
-        .write_data(i_halt), .read_data(o_halt)
+        .write_data(bubble ? 1'b0 : i_halt), .read_data(o_halt)
     );
 
     register #(.WIDTH(4)) r_alu_op (
@@ -66,7 +67,7 @@ module flop_id2ex(
     // -- writeback control
     register #(.WIDTH(1)) r_rf_wen (
         .clk(clk), .rst(rst), .write_en(write_en),
-        .write_data(i_rf_wen), .read_data(o_rf_wen)
+        .write_data(i_rf_wen & ~bubble), .read_data(o_rf_wen)
     );
 
     register #(.WIDTH(2)) r_wb_op (
@@ -77,12 +78,12 @@ module flop_id2ex(
     // -- mem control
     register #(.WIDTH(1)) r_dmem_ren (
         .clk(clk), .rst(rst), .write_en(write_en),
-        .write_data(i_dmem_ren), .read_data(o_dmem_ren)
+        .write_data(i_dmem_ren & ~bubble), .read_data(o_dmem_ren)
     );
 
     register #(.WIDTH(1)) r_dmem_wen (
         .clk(clk), .rst(rst), .write_en(write_en),
-        .write_data(i_dmem_wen), .read_data(o_dmem_wen)
+        .write_data(i_dmem_wen & ~bubble), .read_data(o_dmem_wen)
     );
 
     // -- register numbers
