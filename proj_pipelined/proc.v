@@ -27,9 +27,6 @@ module proc (/*AUTOARG*/
     // 
     // branches are predicted in IF, and resolved in EX;
     // this means we will need to squash two instructions each time we mispredict a branch.
-    //
-    // !!!! TODO !!!!
-    // - rethink naming conventions
 
     // -- INSTRUCTION FETCH
     wire [15:0] IF_next_pc_basic;
@@ -165,6 +162,10 @@ module proc (/*AUTOARG*/
 
     // -- EXECUTE
     wire [15:0] EX_alu_out;
+    // -- forwarding control
+    wire [1:0] EX_fwd_X, EX_fwd_Y;
+    // -- needed for MEM->EX fwd path
+    wire [15:0] EX2MEM_alu_out;
     execute execute (
         .err      (EX_err),
 
@@ -176,13 +177,20 @@ module proc (/*AUTOARG*/
         .vY       (ID2EX_vY),
         .imm16    (ID2EX_imm16),
 
-        .alu_out  (EX_alu_out)
+        .alu_out  (EX_alu_out),
+
+        // -- forwarding control
+        .fwd_X      (EX_fwd_X),
+        .fwd_Y      (EX_fwd_Y),
+
+        // -- forwarding datapaths
+        .WB_wb_data (WB_wb_data),
+        .MEM_alu_out(EX2MEM_alu_out)
     );
 
     // -- BOUNDARY: EX/MEM
     wire EX2MEM_halt;
     wire [1:0]  EX2MEM_wb_op;
-    wire [15:0] EX2MEM_alu_out;
     wire [15:0] EX2MEM_vY;
     wire EX2MEM_dmem_ren, EX2MEM_dmem_wen;
     wire [2:0] EX2MEM_rO;
@@ -271,7 +279,20 @@ module proc (/*AUTOARG*/
         .wb_data (WB_wb_data)
     );
 
-    // ---- HAZARD COMPUTATION UNIT ----
+    // ---- FORWARDING CONTROL UNIT ----
+    forwarder i_forwarder (
+        .EX_rX     (ID2EX_rX),
+        .EX_rY     (ID2EX_rY),
+        .MEM_rO    (EX2MEM_rO),
+        .MEM_rf_wen(EX2MEM_rf_wen),
+        .WB_rO     (WB_rO),
+        .WB_rf_wen (WB_rf_wen),
+        .fwd_X     (EX_fwd_X),
+        .fwd_Y     (EX_fwd_Y)
+    );
+
+
+    // ---- HAZARD IDENTIFICATION UNIT ----
     hazard hazard (
     );
 endmodule // proc

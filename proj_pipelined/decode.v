@@ -122,7 +122,7 @@ module decode (
 
         .halt         (halt),
 
-        .err(control_err)
+        .err          (control_err)
     );
 
     assign err = control_err; // TODO
