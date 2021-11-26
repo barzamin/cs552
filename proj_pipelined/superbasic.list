@@ -1,3 +1,4 @@
 memfwd.asm
 tramplefwd.asm
 simplexor.asm
+loadstall.asm
