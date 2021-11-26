@@ -34,6 +34,9 @@ module rf_bypassed(
     // -- register file bypassing:
     //    forward data being written to rf to output,
     //    if we're reading the written reg and a write is occuring
-    assign read1_data = (write_en && (write_reg == read1_reg)) ? write_data : read1_data_raw;
-    assign read2_data = (write_en && (write_reg == read2_reg)) ? write_data : read2_data_raw;
+    wire bypass_1, bypass_2;
+    assign bypass_1 = (write_en && (write_reg == read1_reg));
+    assign bypass_2 = (write_en && (write_reg == read2_reg));
+    assign read1_data = bypass_1 ? write_data : read1_data_raw;
+    assign read2_data = bypass_2 ? write_data : read2_data_raw;
 endmodule
