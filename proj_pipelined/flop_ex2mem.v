@@ -16,6 +16,8 @@ module flop_ex2mem(
     input  wire [15:0] i_alu_out,
     output wire [15:0] o_alu_out,
 
+    input  wire [2:0] i_rY,
+    output wire [2:0] o_rY,
     input  wire [15:0] i_vY,
     input  wire [15:0] o_vY,
 
@@ -36,6 +38,11 @@ module flop_ex2mem(
     register #(.WIDTH(16)) r_alu_out (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_alu_out), .read_data(o_alu_out)
+    );
+
+    register #(.WIDTH(3)) r_rY (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_rY), .read_data(o_rY)
     );
 
     register #(.WIDTH(16)) r_vY (

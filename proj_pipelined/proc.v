@@ -166,6 +166,8 @@ module proc (/*AUTOARG*/
     wire [1:0] EX_fwd_X, EX_fwd_Y;
     // -- needed for MEM->EX fwd path
     wire [15:0] EX2MEM_alu_out;
+    // -- (possibly) forwarded version
+    wire [15:0] EX_vY;
     execute execute (
         .err      (EX_err),
 
@@ -185,12 +187,16 @@ module proc (/*AUTOARG*/
 
         // -- forwarding datapaths
         .WB_wb_data (WB_wb_data),
-        .MEM_alu_out(EX2MEM_alu_out)
+        .MEM_alu_out(EX2MEM_alu_out),
+
+        // -- potentially forwarded vY to pass down
+        .EX_vY      (EX_vY)
     );
 
     // -- BOUNDARY: EX/MEM
     wire EX2MEM_halt;
     wire [1:0]  EX2MEM_wb_op;
+    wire [2:0] EX2MEM_rY;
     wire [15:0] EX2MEM_vY;
     wire EX2MEM_dmem_ren, EX2MEM_dmem_wen;
     wire [2:0] EX2MEM_rO;
@@ -208,7 +214,11 @@ module proc (/*AUTOARG*/
         .i_alu_out(EX_alu_out),
         .o_alu_out(EX2MEM_alu_out),
 
-        .i_vY(ID2EX_vY), // todo use forwarded ver
+        // todo use forwarded ver. note(petra) is this even relevnt anymore? since we select forwarded vY (from WB) in MEM
+        // NOPE THIS IS IMPORTANT LMFAO
+        .i_rY(ID2EX_rY),
+        .o_rY(EX2MEM_rY),
+        .i_vY(EX_vY),
         .o_vY(EX2MEM_vY),
 
         .i_dmem_ren(ID2EX_dmem_ren),
@@ -224,19 +234,23 @@ module proc (/*AUTOARG*/
 
     // -- MEMORY
     wire [15:0] MEM_dmem_out;
+    wire MEM_fwd_WB_vY;
     memory memory (
         .clk       (clk),
         .rst       (rst),
         .err       (MEM_err),
+        .halt      (EX2MEM_halt),
 
         .addr      (EX2MEM_alu_out),
 
         .read_en   (EX2MEM_dmem_ren),
         .read_data (MEM_dmem_out),
         .write_en  (EX2MEM_dmem_wen),
-        .write_data(EX2MEM_vY),
+        .vY        (EX2MEM_vY),
 
-        .halt      (EX2MEM_halt)
+        // -- forwarding
+        .fwd_WB_vY (MEM_fwd_WB_vY),
+        .WB_wb_data(WB_wb_data)
     );
 
     // -- BOUNDARY: MEM/WB
@@ -287,13 +301,17 @@ module proc (/*AUTOARG*/
         .MEM_rf_wen(EX2MEM_rf_wen),
         .WB_rO     (WB_rO),
         .WB_rf_wen (WB_rf_wen),
-        .fwd_X     (EX_fwd_X),
-        .fwd_Y     (EX_fwd_Y)
+        .MEM_rY    (EX2MEM_rY),
+
+        .EX_fwd_X  (EX_fwd_X),
+        .EX_fwd_Y  (EX_fwd_Y),
+        .MEM_fwd_WB_vY(MEM_fwd_WB_vY)
     );
 
 
     // ---- HAZARD IDENTIFICATION UNIT ----
     hazard hazard (
     );
+
 endmodule // proc
 // DUMMY LINE FOR REV CONTROL :0:

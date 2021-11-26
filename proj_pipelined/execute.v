@@ -16,6 +16,8 @@ module execute (
     input  wire [15:0] vY,
     input  wire [15:0] imm16,
 
+    output wire [15:0] EX_vY,
+
     output wire [15:0] alu_out
 );
     `include "ops.vh"
@@ -31,6 +33,8 @@ module execute (
         FWDY_MEM : vY_fwd = MEM_alu_out;
         FWDY_WB  : vY_fwd = WB_wb_data;
     endcase
+
+    assign EX_vY = vY_fwd;
 
     // -- alu input muxing
     wire [15:0] alu_A, alu_B;

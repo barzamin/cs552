@@ -9,10 +9,16 @@ module memory (
 
 	input  wire [15:0] addr,
 
-	input  wire [15:0] write_data,
+    output wire [15:0] read_data,
 
-	output wire [15:0] read_data
+	input  wire [15:0] vY,
+
+    input  wire [15:0] WB_wb_data,
+    input  wire        fwd_WB_vY
 );
+    wire [15:0] write_data;
+    assign write_data = fwd_WB_vY ? WB_wb_data : vY;
+
     wire mem_en;
     assign mem_en = read_en | write_en; // enable if we're doing any access
     memory2c membank (
