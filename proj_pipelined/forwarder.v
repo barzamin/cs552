@@ -32,10 +32,10 @@ module forwarder (
     // note mem->ex takes priority over wb->ex
     assign EX_fwd_X = mem_has_EX_X ? FWDX_MEM :
                        wb_has_EX_X ? FWDX_WB
-                                : FWDX_PASS;
+                                   : FWDX_PASS;
     assign EX_fwd_Y = mem_has_EX_Y ? FWDX_MEM :
                        wb_has_EX_Y ? FWDX_WB
-                                : FWDX_PASS;
+                                   : FWDX_PASS;
 
     // fwd WB -> MEM if WB writes reg we're writing out of
     assign MEM_fwd_WB_vY = WB_rf_wen && (WB_rO == MEM_rY);

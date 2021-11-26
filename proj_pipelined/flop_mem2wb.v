@@ -2,6 +2,9 @@ module flop_mem2wb(
     input  wire clk,
     input  wire rst,
 
+    input  wire i_halt,
+    output wire o_halt,
+
     input  wire i_rf_wen,
     output wire o_rf_wen,
     input  wire  [1:0] i_wb_op,
@@ -19,6 +22,11 @@ module flop_mem2wb(
     // TODO !!!
     wire write_en;
     assign write_en = 1'b1;
+
+    register #(.WIDTH(1)) r_halt (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_halt), .read_data(o_halt)
+    );
 
     // -- writeback control
     register #(.WIDTH(3)) r_rO (

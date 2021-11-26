@@ -23,11 +23,7 @@ module proc (/*AUTOARG*/
 
     // IF -> ID -> EX -> MEM -> WB
 
-    // ==== notes: ====
-    // 
-    // branches are predicted in IF, and resolved in EX;
-    // this means we will need to squash two instructions each time we mispredict a branch.
-
+    // freeze/bubble signals for stalling
     wire freeze_pc, freeze_if2id, bubble_id2ex;
 
     // -- INSTRUCTION FETCH
@@ -264,11 +260,15 @@ module proc (/*AUTOARG*/
     wire [15:0] MEM2WB_dmem_out;
     wire [15:0] MEM2WB_link_pc; // todo
     wire        MEM2WB_flag;
+    wire        MEM2WB_halt;
     // wire [2:0]  MEM2WB_rO;
     // wire        MEM2WB_rf_wen;
     flop_mem2wb fl_mem2wb (
         .clk(clk),
         .rst(rst),
+
+        .i_halt    (EX2MEM_halt),
+        .o_halt    (MEM2WB_halt),
 
         .i_wb_op   (EX2MEM_wb_op),
         .o_wb_op   (MEM2WB_wb_op),
