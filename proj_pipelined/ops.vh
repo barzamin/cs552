@@ -95,3 +95,12 @@ localparam IMMC_SIMM5 = 3'b010;
 localparam IMMC_ZIMM8 = 3'b001;
 localparam IMMC_SIMM8 = 3'b011;
 localparam IMMC_DISPL = 3'b100;
+
+// -- forwarding control
+localparam FWDX_PASS = 3'b00;
+localparam FWDX_MEM  = 3'b01;
+localparam FWDX_WB   = 3'b10;
+
+localparam FWDY_PASS = 3'b00;
+localparam FWDY_MEM  = 3'b01;
+localparam FWDY_WB   = 3'b10;
