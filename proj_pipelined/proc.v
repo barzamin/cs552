@@ -34,7 +34,8 @@ module proc (/*AUTOARG*/
         .rst              (rst),
         .freeze_pc        (freeze_pc),
         .err              (IF_err),
-        .next_pc_displaced(/*TODO*/),
+        .pc_rewrite_to    (/*TODO*/),
+        .rewrite_pc       (1'b0),
         .next_pc_basic    (IF_next_pc_basic),
         .instr            (IF_instr)
     );

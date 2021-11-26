@@ -45,7 +45,7 @@ module flop_id2ex(
 
     register #(.WIDTH(1)) r_halt (
         .clk(clk), .rst(rst), .write_en(write_en),
-        .write_data(bubble ? 1'b0 : i_halt), .read_data(o_halt)
+        .write_data(i_halt & ~bubble), .read_data(o_halt)
     );
 
     register #(.WIDTH(4)) r_alu_op (

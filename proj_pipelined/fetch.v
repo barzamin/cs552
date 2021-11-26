@@ -4,7 +4,9 @@ module fetch(
     output wire err,
     input  wire freeze_pc,
 
-    input  wire [15:0] next_pc_displaced, // coming in from decode
+    // loopback from decode
+    input  wire [15:0] pc_rewrite_to,
+    input  wire        rewrite_pc,
 
     output wire [15:0] next_pc_basic,
     output wire [15:0] instr
@@ -43,7 +45,7 @@ module fetch(
 
     // which do we take?
     // assign next_pc = prediction ? next_pc_displaced : next_pc_basic;
-    assign next_pc = next_pc_basic;
+    assign next_pc = rewrite_pc ? pc_rewrite_to : next_pc_basic;
 
     assign err = 1'b0;
 endmodule
