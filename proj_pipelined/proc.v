@@ -28,12 +28,15 @@ module proc (/*AUTOARG*/
     // branches are predicted in IF, and resolved in EX;
     // this means we will need to squash two instructions each time we mispredict a branch.
 
+    wire freeze_pc, freeze_if2id, bubble_id2ex;
+
     // -- INSTRUCTION FETCH
     wire [15:0] IF_next_pc_basic;
     wire [15:0] IF_instr;
     fetch fetch (
         .clk              (clk),
         .rst              (rst),
+        .freeze_pc        (freeze_pc),
         .err              (IF_err),
         .next_pc_displaced(/*TODO*/),
         .next_pc_basic    (IF_next_pc_basic),
@@ -44,14 +47,15 @@ module proc (/*AUTOARG*/
     wire [15:0] ID_next_pc_basic;
     wire [15:0] ID_instr;
     flop_if2id fl_if2id (
-        .clk(clk),
-        .rst(rst),
+        .clk            (clk),
+        .rst            (rst),
+        .write_en       (~freeze_if2id),
 
         .i_next_pc_basic(IF_next_pc_basic),
         .o_next_pc_basic(ID_next_pc_basic),
 
-        .i_instr(IF_instr),
-        .o_instr(ID_instr)
+        .i_instr        (IF_instr),
+        .o_instr        (ID_instr)
     );
 
     // -- INSTRUCTION DECODE
@@ -120,6 +124,7 @@ module proc (/*AUTOARG*/
     flop_id2ex fl_id2ex (
         .clk        (clk),
         .rst        (rst),
+        .bubble     (bubble_id2ex),
 
         .i_halt     (ID_halt),
         .o_halt     (ID2EX_halt),
@@ -311,6 +316,14 @@ module proc (/*AUTOARG*/
 
     // ---- HAZARD IDENTIFICATION UNIT ----
     hazard hazard (
+        .ID_rX       (ID_rX),
+        .ID_rY       (ID_rY),
+        .EX_dmem_ren(ID2EX_dmem_ren),
+        .EX_rO       (ID2EX_rO),
+
+        .freeze_pc   (freeze_pc),
+        .freeze_if2id(freeze_if2id),
+        .bubble_id2ex(bubble_id2ex)
     );
 
 endmodule // proc
