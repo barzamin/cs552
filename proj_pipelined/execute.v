@@ -6,6 +6,7 @@ module execute (
     input  wire        alu_b_imm,
 
     input  wire [2:0]  fcu_op,
+    input  wire        writeflag,
 
     input  wire [1:0]  fwd_X,
     input  wire [1:0]  fwd_Y,
@@ -18,7 +19,8 @@ module execute (
 
     output wire [15:0] EX_vY,
 
-    output wire [15:0] alu_out
+    output wire [15:0] alu_out,
+    output wire        flag
 );
     `include "ops.vh"
     // -- forwarding muxes
@@ -42,27 +44,29 @@ module execute (
     assign alu_B = alu_b_imm ? imm16 : vY_fwd;
 
     wire alu_zero, alu_ovf, alu_carry;
+    wire [15:0] alu_out_direct;
     alu alu (
         .op      (alu_op),
         .A       (alu_A),
         .B       (alu_B),
-        .out     (alu_out),
+        .out     (alu_out_direct),
         .zero    (alu_zero),
         .ovf     (alu_ovf),
         .carryout(alu_carry)
     );
 
-    wire flag;
     fcu fcu (
-        .op     (fcu_op),
+        .op  (fcu_op),
 
         .alu_out(alu_out),
         .zero   (alu_ovf),
         .carry  (alu_carry),
         .ovf    (alu_ovf),
 
-        .flag   (flag)
+        .flag (flag)
     );
+
+    assign alu_out = writeflag ? {15'b0, flag} : alu_out_direct;
 
     assign err = 1'b0;
 endmodule

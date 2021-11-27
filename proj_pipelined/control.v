@@ -16,6 +16,7 @@ module control(
     output reg link,
 
     output reg [1:0] wb_op,
+    output reg writeflag,
     output reg rf_write_en,
 
     output reg [2:0] immcode,
@@ -41,13 +42,14 @@ module control(
         link = 1'b0;
 
         wb_op = WB_ALU;
+        writeflag = 1'b0;
         rf_write_en = 1'b0;
 
         immcode = IMMC_ZIMM5;
         alu_b_imm = 1'b0;
 
         dmem_wen = 1'b0;
-        dmem_ren  = 1'b0;
+        dmem_ren = 1'b0;
 
         case (opcode)
             OP_HALT : begin
@@ -145,7 +147,7 @@ module control(
                 alu_op = ALU_SUB;
                 fcu_op = FCU_EQ;
 
-                wb_op = WB_FLAG;
+                writeflag = 1'b1;
                 rf_write_en = 1'b1;
             end
             OP_SLT : begin
@@ -154,7 +156,7 @@ module control(
                 alu_op = ALU_SUB;
                 fcu_op = FCU_LT;
 
-                wb_op = WB_FLAG;
+                writeflag = 1'b1;
                 rf_write_en = 1'b1;
             end
             OP_SLE : begin
@@ -163,7 +165,7 @@ module control(
                 alu_op = ALU_SUB;
                 fcu_op = FCU_LE;
 
-                wb_op = WB_FLAG;
+                writeflag = 1'b1;
                 rf_write_en = 1'b1;
             end
             OP_SCO : begin
@@ -172,7 +174,7 @@ module control(
                 alu_op = ALU_ADD;
                 fcu_op = FCU_CRY;
 
-                wb_op = WB_FLAG;
+                writeflag = 1'b1;
                 rf_write_en = 1'b1;
             end
 
