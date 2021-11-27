@@ -19,6 +19,7 @@ module decode (
     output wire [2:0]  fcu_op,
 
     output wire [1:0]  wb_op,
+    output wire writeflag,
 
     output wire dmem_ren,
     output wire dmem_wen,
@@ -32,6 +33,9 @@ module decode (
     output wire [15:0] vY,  // value from rf for rY
 
     output reg  [15:0] imm16, // sign/zero-extended imm or displacement
+
+    output wire [1:0] flow_ty,
+    output wire [15:0] dbranch_tgt,
 
     output wire halt
 );
@@ -99,19 +103,13 @@ module decode (
 
 
     // -- compute branch target
-    wire [15:0] branch_tgt_pc;
     adder16 i_adder16 (
         .A   (next_pc_basic),
         .B   (imm16),
         .Cin (1'b0),
-        .S   (branch_tgt_pc),
+        .S   (dbranch_tgt),
         .Cout()
     );
-
-    // -- branch resteering logic
-    wire [1:0] flow_ty;
-    wire early_branch_resteer;
-    assign early_branch_resteer = (flow_ty == FLOW_JUMP);
 
     // -- opcode decoding/control logic
     wire control_err;
@@ -130,6 +128,7 @@ module decode (
 
         .fcu_op       (fcu_op),
         .wb_op        (wb_op),
+        .writeflag    (writeflag),
 
         .dmem_ren     (dmem_ren),
         .dmem_wen     (dmem_wen),
