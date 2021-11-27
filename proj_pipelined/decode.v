@@ -98,6 +98,21 @@ module decode (
           writeto_rs ? field_rs : rd_intermediate;
 
 
+    // -- compute branch target
+    wire [15:0] branch_tgt_pc;
+    adder16 i_adder16 (
+        .A   (next_pc_basic),
+        .B   (imm16),
+        .Cin (1'b0),
+        .S   (branch_tgt_pc),
+        .Cout()
+    );
+
+    // -- branch resteering logic
+    wire [1:0] flow_ty;
+    wire early_branch_resteer;
+    assign early_branch_resteer = (flow_ty == FLOW_JUMP);
+
     // -- opcode decoding/control logic
     wire control_err;
     control control (
@@ -119,6 +134,8 @@ module decode (
         .dmem_ren     (dmem_ren),
         .dmem_wen     (dmem_wen),
         .rf_write_en  (rf_wen),
+
+        .flow_ty      (flow_ty),
 
         .halt         (halt),
 
