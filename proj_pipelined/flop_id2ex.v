@@ -14,10 +14,15 @@ module flop_id2ex(
     input  wire  [2:0] i_fcu_op,
     output wire  [2:0] o_fcu_op,
 
+    input  wire [1:0] i_flow_ty,
+    output wire [1:0] o_flow_ty,
+
     input  wire i_rf_wen,
     output wire o_rf_wen,
     input  wire  [1:0] i_wb_op,
     output wire  [1:0] o_wb_op,
+    input  wire i_writeflag,
+    output wire o_writeflag,
 
     input  wire i_dmem_ren,
     output wire o_dmem_ren,
@@ -39,6 +44,7 @@ module flop_id2ex(
     input  wire [15:0] i_imm16,
     output wire [15:0] o_imm16
 );
+    `include "ops.vh"
     // TODO !!!
     wire write_en;
     assign write_en = 1'b1;
@@ -63,6 +69,10 @@ module flop_id2ex(
         .write_data(i_fcu_op), .read_data(o_fcu_op)
     );
 
+    register #(.WIDTH(2)) r_flow_ty (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(bubble ? FLOW_BASIC : i_flow_ty), .read_data(o_flow_ty)
+    );
 
     // -- writeback control
     register #(.WIDTH(1)) r_rf_wen (
@@ -73,6 +83,11 @@ module flop_id2ex(
     register #(.WIDTH(2)) r_wb_op (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_wb_op), .read_data(o_wb_op)
+    );
+
+    register #(.WIDTH(1)) r_writeflag (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_writeflag & ~bubble), .read_data(o_writeflag)
     );
 
     // -- mem control
