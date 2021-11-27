@@ -24,21 +24,50 @@ module proc (/*AUTOARG*/
     // IF -> ID -> EX -> MEM -> WB
 
     // freeze/bubble signals for stalling
-    wire freeze_pc, freeze_if2id, bubble_if2id, bubble_id2ex;
-    assign bubble_if2id = 1'b0; // TODO REMOVE ME REMOVE ME IMPORTANT
+    wire freeze_pc, freeze_if2id, flush_if2id, bubble_id2ex, flush_id2ex;
+
+    // -- BRANCH CONTROLLER
+    wire [1:0]  ID_flow_ty;
+    wire [15:0] ID_dbranch_tgt;
+    wire [1:0]  ID2EX_flow_ty;
+    wire [15:0] ID2EX_dbranch_tgt;
+    wire [15:0] EX_alu_out;
+    wire        EX_flag;
+
+    wire IF_rewrite_pc;
+    wire [15:0] IF_pc_rewrite_to;
+
+    branch_controller branch_controller (
+        .ID_flow_ty      (ID_flow_ty),
+        .ID_dbranch_tgt  (ID_dbranch_tgt),
+
+        .EX_flow_ty      (ID2EX_flow_ty),
+        .EX_dbranch_tgt  (ID2EX_dbranch_tgt),
+        .EX_alu_out      (EX_alu_out),
+        .EX_flag         (EX_flag),
+
+        .IF_rewrite_pc   (IF_rewrite_pc),
+        .IF_pc_rewrite_to(IF_pc_rewrite_to),
+
+        .flush_if2id     (flush_if2id),
+        .flush_id2ex     (flush_id2ex)
+    );
+
 
     // -- INSTRUCTION FETCH
     wire [15:0] IF_next_pc_basic;
     wire [15:0] IF_instr;
+    wire        ID_halt; // loopback
     fetch fetch (
-        .clk              (clk),
-        .rst              (rst),
-        .freeze_pc        (freeze_pc),
-        .err              (IF_err),
-        .pc_rewrite_to    (/*TODO*/),
-        .rewrite_pc       (1'b0),
-        .next_pc_basic    (IF_next_pc_basic),
-        .instr            (IF_instr)
+        .clk          (clk),
+        .rst          (rst),
+        // freeze PC on hazard or halt
+        .freeze_pc    (freeze_pc || ID_halt),
+        .err          (IF_err),
+        .rewrite_pc   (IF_rewrite_pc),
+        .pc_rewrite_to(IF_pc_rewrite_to),
+        .next_pc_basic(IF_next_pc_basic),
+        .instr        (IF_instr)
     );
 
     // -- BOUNDARY: IF/ID
@@ -47,8 +76,9 @@ module proc (/*AUTOARG*/
     flop_if2id fl_if2id (
         .clk            (clk),
         .rst            (rst),
-        .bubble         (bubble_if2id),
-        .write_en       (~freeze_if2id),
+        .flush          (flush_if2id),
+        // freeze IF/ID register on halt so pipeline gradually fills with HALT
+        .write_en       (!(freeze_if2id || ID_halt)),
 
         .i_next_pc_basic(IF_next_pc_basic),
         .o_next_pc_basic(ID_next_pc_basic),
@@ -58,7 +88,6 @@ module proc (/*AUTOARG*/
     );
 
     // -- INSTRUCTION DECODE
-    wire ID_halt;
     wire [15:0] ID_vX, ID_vY;
     wire [2:0]  ID_rX, ID_rY, ID_rO;
     wire [15:0] ID_imm16;
@@ -66,6 +95,7 @@ module proc (/*AUTOARG*/
     wire        ID_alu_b_imm;
     wire [2:0]  ID_fcu_op;
     wire [1:0]  ID_wb_op;
+    wire        ID_writeflag;
     wire        ID_dmem_ren, ID_dmem_wen;
     wire        ID_rf_wen;
     // -- loopbacks
@@ -93,8 +123,12 @@ module proc (/*AUTOARG*/
         .alu_b_imm    (ID_alu_b_imm),
         .fcu_op       (ID_fcu_op),
 
+        .flow_ty      (ID_flow_ty),
+        .dbranch_tgt  (ID_dbranch_tgt),
+
         .rf_wen       (ID_rf_wen),
         .wb_op        (ID_wb_op),
+        .writeflag    (ID_writeflag),
 
         .dmem_ren     (ID_dmem_ren),
         .dmem_wen     (ID_dmem_wen),
@@ -116,6 +150,7 @@ module proc (/*AUTOARG*/
     wire        ID2EX_halt;
 
     wire [1:0]  ID2EX_wb_op;
+    wire        ID2EX_writeflag;
 
     wire        ID2EX_dmem_wen, ID2EX_dmem_ren;
     wire        ID2EX_rf_wen;
@@ -140,6 +175,11 @@ module proc (/*AUTOARG*/
         .o_rf_wen   (ID2EX_rf_wen),
         .i_wb_op    (ID_wb_op),
         .o_wb_op    (ID2EX_wb_op),
+        .i_writeflag(ID_writeflag),
+        .o_writeflag(ID2EX_writeflag),
+
+        .i_flow_ty  (ID_flow_ty),
+        .o_flow_ty  (ID2EX_flow_ty),
 
         .i_dmem_ren (   ID_dmem_ren),
         .o_dmem_ren (ID2EX_dmem_ren),
@@ -165,7 +205,6 @@ module proc (/*AUTOARG*/
     );
 
     // -- EXECUTE
-    wire [15:0] EX_alu_out;
     // -- forwarding control
     wire [1:0] EX_fwd_X, EX_fwd_Y;
     // -- needed for MEM->EX fwd path
@@ -184,6 +223,8 @@ module proc (/*AUTOARG*/
         .imm16    (ID2EX_imm16),
 
         .alu_out  (EX_alu_out),
+        .flag     (EX_flag),
+        .writeflag(ID2EX_writeflag),
 
         // -- forwarding control
         .fwd_X      (EX_fwd_X),
@@ -205,6 +246,7 @@ module proc (/*AUTOARG*/
     wire EX2MEM_dmem_ren, EX2MEM_dmem_wen;
     wire [2:0] EX2MEM_rO;
     wire EX2MEM_rf_wen;
+    wire EX2MEM_flag;
     flop_ex2mem fl_ex2mem (
         .clk   (clk),
         .rst   (rst),
@@ -217,6 +259,9 @@ module proc (/*AUTOARG*/
 
         .i_alu_out(EX_alu_out),
         .o_alu_out(EX2MEM_alu_out),
+
+        .i_flag(EX_flag),
+        .o_flag(EX2MEM_flag),
 
         // todo use forwarded ver. note(petra) is this even relevnt anymore? since we select forwarded vY (from WB) in MEM
         // NOPE THIS IS IMPORTANT LMFAO
@@ -281,6 +326,9 @@ module proc (/*AUTOARG*/
 
         .i_alu_out(EX2MEM_alu_out),
         .o_alu_out(MEM2WB_alu_out),
+
+        .i_flag    (EX2MEM_flag),
+        .o_flag    (MEM2WB_flag),
 
         .i_rO(EX2MEM_rO),
         .o_rO(WB_rO),
