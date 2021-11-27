@@ -2,3 +2,5 @@ memfwd.asm
 tramplefwd.asm
 simplexor.asm
 loadstall.asm
+seq.asm
+halt.asm
