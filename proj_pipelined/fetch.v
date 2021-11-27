@@ -43,8 +43,7 @@ module fetch(
         .data_out  (instr)
     );
 
-    // which do we take?
-    // assign next_pc = prediction ? next_pc_displaced : next_pc_basic;
+    // assume basic flow unless we have an active pc rewrite
     assign next_pc = rewrite_pc ? pc_rewrite_to : next_pc_basic;
 
     assign err = 1'b0;

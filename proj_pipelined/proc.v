@@ -24,7 +24,8 @@ module proc (/*AUTOARG*/
     // IF -> ID -> EX -> MEM -> WB
 
     // freeze/bubble signals for stalling
-    wire freeze_pc, freeze_if2id, bubble_id2ex;
+    wire freeze_pc, freeze_if2id, bubble_if2id, bubble_id2ex;
+    assign bubble_if2id = 1'b0; // TODO REMOVE ME REMOVE ME IMPORTANT
 
     // -- INSTRUCTION FETCH
     wire [15:0] IF_next_pc_basic;
@@ -46,6 +47,7 @@ module proc (/*AUTOARG*/
     flop_if2id fl_if2id (
         .clk            (clk),
         .rst            (rst),
+        .bubble         (bubble_if2id),
         .write_en       (~freeze_if2id),
 
         .i_next_pc_basic(IF_next_pc_basic),
