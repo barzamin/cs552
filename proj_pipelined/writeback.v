@@ -15,7 +15,7 @@ module writeback (
     always @* case (wb_op)
         default : wb_data = alu_out; // WB_ALU
         WB_MEM  : wb_data = dmem_out;
-        WB_FLAG : wb_data = {15'b0, flag};
+        // WB_FLAG : wb_data = {15'b0, flag};
         WB_LINK : wb_data = link_pc;
     endcase
 
