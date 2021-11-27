@@ -58,10 +58,10 @@ module execute (
     fcu fcu (
         .op  (fcu_op),
 
-        .alu_out(alu_out),
-        .zero   (alu_ovf),
-        .carry  (alu_carry),
-        .ovf    (alu_ovf),
+        .sgn  (alu_out_direct[15]),
+        .zero (alu_zero),
+        .carry(alu_carry),
+        .ovf  (alu_ovf),
 
         .flag (flag)
     );

@@ -1,5 +1,5 @@
 module fcu( // Flag Computation Unit
-    input wire [15:0] alu_out,
+    input wire sgn,
     input wire carry,
     input wire ovf,
     input wire zero,
@@ -7,11 +7,6 @@ module fcu( // Flag Computation Unit
 
     output reg flag
 );
-    // sign extraction
-    wire sgn;
-    assign sgn = alu_out[15];
-
-
     `include "ops.vh"
     // op        function
     // ----------------------
