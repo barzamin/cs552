@@ -3,7 +3,7 @@ module flop_if2id(
     input  wire rst,
 
     input  wire write_en,
-    input  wire bubble,
+    input  wire flush,
 
     input  wire [15:0] i_instr,
     output wire [15:0] o_instr,
@@ -18,12 +18,11 @@ module flop_if2id(
         .write_data(1'b1), .read_data(if_valid)
     );
 
-    wire inject_nop;
-    // inject NOP if we don't have valid data yet or if we're flushing
-    assign inject_nop = !if_valid || bubble;
+    localparam INST_NOP = 16'h0800;
 
+    // inject NOP *after* flop if we don't have valid data yet
     wire [15:0] flop_o_instr;
-    assign o_instr = inject_nop ? 16'h0800 : flop_o_instr;
+    assign o_instr = !if_valid ? INST_NOP : flop_o_instr;
 
     register #(.WIDTH(16)) r_next_pc_basic (
         .clk       (clk),
@@ -37,7 +36,7 @@ module flop_if2id(
         .clk       (clk),
         .rst       (rst),
         .write_en  (write_en),
-        .write_data(i_instr),
+        .write_data(flush ? INST_NOP : i_instr),
         .read_data (flop_o_instr)
     );
 endmodule
