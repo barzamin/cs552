@@ -3,4 +3,6 @@ tramplefwd.asm
 simplexor.asm
 loadstall.asm
 seq.asm
-halt.asm
+haltkill.asm
+jumpoverhalt.asm
+jalfwd.asm

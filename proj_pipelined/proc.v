@@ -26,6 +26,9 @@ module proc (/*AUTOARG*/
     // freeze/bubble signals for stalling
     wire freeze_pc, freeze_if2id, flush_if2id, bubble_id2ex, flush_id2ex;
 
+    wire ID2EX_halt, EX2MEM_halt, MEM2WB_halt, halt_committed;
+    assign halt_committed = ID2EX_halt | EX2MEM_halt | MEM2WB_halt;
+
     // -- BRANCH CONTROLLER
     wire [1:0]  ID_flow_ty;
     wire [15:0] ID_dbranch_tgt;
@@ -64,7 +67,7 @@ module proc (/*AUTOARG*/
         .clk          (clk),
         .rst          (rst),
         // freeze PC on hazard or halt
-        .freeze_pc    (freeze_pc),
+        .freeze_pc    (freeze_pc || halt_committed),
         .err          (IF_err),
         .rewrite_pc   (IF_rewrite_pc),
         .pc_rewrite_to(IF_pc_rewrite_to),
@@ -78,8 +81,7 @@ module proc (/*AUTOARG*/
     flop_if2id fl_if2id (
         .clk            (clk),
         .rst            (rst),
-        .flush          (flush_if2id),
-        // freeze IF/ID register on halt so pipeline gradually fills with HALT
+        .flush          (flush_if2id || halt_committed),
         .freeze         (freeze_if2id),
 
         .i_next_pc_basic(IF_next_pc_basic),
@@ -149,7 +151,6 @@ module proc (/*AUTOARG*/
     wire [2:0]  ID2EX_rX, ID2EX_rY, ID2EX_rO;
     wire [15:0] ID2EX_vX, ID2EX_vY;
     wire [15:0] ID2EX_imm16;
-    wire        ID2EX_halt;
 
     wire [1:0]  ID2EX_wb_op;
     wire        ID2EX_writeflag;
@@ -162,7 +163,7 @@ module proc (/*AUTOARG*/
     flop_id2ex fl_id2ex (
         .clk        (clk),
         .rst        (rst),
-        .bubble     (bubble_id2ex || flush_id2ex),
+        .bubble     (bubble_id2ex || flush_id2ex || halt_committed),
 
         .i_halt     (ID_halt),
         .o_halt     (ID2EX_halt),
@@ -248,7 +249,6 @@ module proc (/*AUTOARG*/
     );
 
     // -- BOUNDARY: EX/MEM
-    wire EX2MEM_halt;
     wire [1:0]  EX2MEM_wb_op;
     wire [2:0] EX2MEM_rY;
     wire [15:0] EX2MEM_vY;
@@ -321,7 +321,6 @@ module proc (/*AUTOARG*/
     wire [15:0] MEM2WB_dmem_out;
     wire [15:0] MEM2WB_link_pc;
     wire        MEM2WB_flag;
-    wire        MEM2WB_halt;
     // wire [2:0]  MEM2WB_rO;
     // wire        MEM2WB_rf_wen;
     flop_mem2wb fl_mem2wb (
