@@ -20,7 +20,10 @@ module flop_mem2wb(
     output wire [15:0] o_alu_out,
 
     input  wire i_flag,
-    output wire o_flag
+    output wire o_flag,
+
+    input  wire [15:0] i_link_pc,
+    output wire [15:0] o_link_pc
 );
     // TODO !!!
     wire write_en;
@@ -60,5 +63,10 @@ module flop_mem2wb(
     register #(.WIDTH(1)) r_flag (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_flag), .read_data(o_flag)
+    );
+
+    register #(.WIDTH(16)) r_link_pc (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_link_pc), .read_data(o_link_pc)
     );
 endmodule

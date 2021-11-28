@@ -19,6 +19,9 @@ module flop_id2ex(
     input  wire [15:0] i_dbranch_tgt,
     output wire [15:0] o_dbranch_tgt,
 
+    input  wire [15:0] i_link_pc,
+    output wire [15:0] o_link_pc,
+
     input  wire i_rf_wen,
     output wire o_rf_wen,
     input  wire  [1:0] i_wb_op,
@@ -79,6 +82,11 @@ module flop_id2ex(
     register #(.WIDTH(16)) r_dbranch_tgt (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_dbranch_tgt), .read_data(o_dbranch_tgt)
+    );
+
+    register #(.WIDTH(16)) r_link_pc (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_link_pc), .read_data(o_link_pc)
     );
 
     // -- writeback control

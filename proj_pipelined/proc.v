@@ -154,6 +154,8 @@ module proc (/*AUTOARG*/
     wire [1:0]  ID2EX_wb_op;
     wire        ID2EX_writeflag;
 
+    wire [15:0] ID2EX_link_pc;
+
     wire        ID2EX_dmem_wen, ID2EX_dmem_ren;
     wire        ID2EX_rf_wen;
 
@@ -180,10 +182,13 @@ module proc (/*AUTOARG*/
         .i_writeflag(ID_writeflag),
         .o_writeflag(ID2EX_writeflag),
 
-        .i_flow_ty  (ID_flow_ty),
-        .o_flow_ty  (ID2EX_flow_ty),
+        .i_flow_ty    (ID_flow_ty),
+        .o_flow_ty    (ID2EX_flow_ty),
         .i_dbranch_tgt(ID_dbranch_tgt),
         .o_dbranch_tgt(ID2EX_dbranch_tgt),
+
+        .i_link_pc(ID_next_pc_basic),
+        .o_link_pc(ID2EX_link_pc),
 
         .i_dmem_ren (   ID_dmem_ren),
         .o_dmem_ren (ID2EX_dmem_ren),
@@ -251,6 +256,7 @@ module proc (/*AUTOARG*/
     wire [2:0] EX2MEM_rO;
     wire EX2MEM_rf_wen;
     wire EX2MEM_flag;
+    wire [15:0] EX2MEM_link_pc;
     flop_ex2mem fl_ex2mem (
         .clk   (clk),
         .rst   (rst),
@@ -266,6 +272,9 @@ module proc (/*AUTOARG*/
 
         .i_flag(EX_flag),
         .o_flag(EX2MEM_flag),
+
+        .i_link_pc(ID2EX_link_pc),
+        .o_link_pc(EX2MEM_link_pc),
 
         // todo use forwarded ver. note(petra) is this even relevnt anymore? since we select forwarded vY (from WB) in MEM
         // NOPE THIS IS IMPORTANT LMFAO
@@ -310,7 +319,7 @@ module proc (/*AUTOARG*/
     wire [1:0]  MEM2WB_wb_op;
     wire [15:0] MEM2WB_alu_out;
     wire [15:0] MEM2WB_dmem_out;
-    wire [15:0] MEM2WB_link_pc; // todo
+    wire [15:0] MEM2WB_link_pc;
     wire        MEM2WB_flag;
     wire        MEM2WB_halt;
     // wire [2:0]  MEM2WB_rO;
@@ -333,6 +342,9 @@ module proc (/*AUTOARG*/
 
         .i_flag    (EX2MEM_flag),
         .o_flag    (MEM2WB_flag),
+
+        .i_link_pc (EX2MEM_link_pc),
+        .o_link_pc (MEM2WB_link_pc),
 
         .i_rO(EX2MEM_rO),
         .o_rO(WB_rO),
