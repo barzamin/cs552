@@ -21,8 +21,8 @@ module branch_controller (
     assign early_resteer = (ID_flow_ty == FLOW_JUMP) && (EX_flow_ty == FLOW_BASIC);
 
     assign late_resteer = ((EX_flow_ty == FLOW_COND) && EX_flag)
-                         || EX_flow_ty == FLOW_ALU
-                         || EX_flow_ty == FLOW_JUMP;
+                         || EX_flow_ty == FLOW_ALU;
+                         // || EX_flow_ty == FLOW_JUMP;
 
     assign err = early_resteer && late_resteer; // can't do both
 
