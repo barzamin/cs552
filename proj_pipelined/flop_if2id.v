@@ -2,7 +2,7 @@ module flop_if2id(
     input  wire clk,
     input  wire rst,
 
-    input  wire write_en,
+    input  wire freeze,
     input  wire flush,
 
     input  wire [15:0] i_instr,
@@ -11,6 +11,9 @@ module flop_if2id(
     input  wire [15:0] i_next_pc_basic,
     output wire [15:0] o_next_pc_basic
 );
+    wire write_en;
+    assign write_en = ~freeze;
+
     // delay rst so we don't halt on all-zero IF flops
     wire if_valid;
     register #(.WIDTH(1)) r_if_valid (

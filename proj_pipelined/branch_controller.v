@@ -1,4 +1,6 @@
 module branch_controller (
+    output wire err,
+
     input  wire [1:0]  ID_flow_ty,
     input  wire [15:0] ID_dbranch_tgt,
 
@@ -15,13 +17,19 @@ module branch_controller (
     `include "ops.vh"
     wire early_resteer, late_resteer;
 
-    assign early_resteer = (ID_flow_ty == FLOW_JUMP);
+    // can't do an early resteer if we have an older branch we're waiting on
+    assign early_resteer = (ID_flow_ty == FLOW_JUMP) && (EX_flow_ty == FLOW_BASIC);
 
     assign late_resteer = ((EX_flow_ty == FLOW_COND) && EX_flag)
-                         || EX_flow_ty == FLOW_ALU;
+                         || EX_flow_ty == FLOW_ALU
+                         || EX_flow_ty == FLOW_JUMP;
 
+    assign err = early_resteer && late_resteer; // can't do both
 
-    assign IF_pc_rewrite_to = (ID_flow_ty == FLOW_ALU) ? EX_alu_out : ID_dbranch_tgt;
+    assign IF_pc_rewrite_to = early_resteer ? ID_dbranch_tgt : // else late
+                   (EX_flow_ty == FLOW_ALU) ? EX_alu_out
+                                            : EX_dbranch_tgt;
+
     assign IF_rewrite_pc    = early_resteer | late_resteer;
     assign flush_if2id      = early_resteer | late_resteer;
     assign flush_id2ex      = late_resteer;

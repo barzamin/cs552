@@ -16,9 +16,9 @@ module proc (/*AUTOARG*/
     // None of the above lines can be modified
     // but i did anyway. because karu wrote this in 2009 and apparently didn't think nettypes were important??
 
-    wire IF_err, ID_err, EX_err, MEM_err, WB_err;
+    wire IF_err, ID_err, EX_err, MEM_err, WB_err, bctrl_err;
     // compute an error signal for debugging bad states
-    assign err = |{IF_err, ID_err, EX_err, MEM_err, WB_err};
+    assign err = |{IF_err, ID_err, EX_err, MEM_err, WB_err, bctrl_err};
 
 
     // IF -> ID -> EX -> MEM -> WB
@@ -38,6 +38,8 @@ module proc (/*AUTOARG*/
     wire [15:0] IF_pc_rewrite_to;
 
     branch_controller branch_controller (
+        .err             (bctrl_err),
+
         .ID_flow_ty      (ID_flow_ty),
         .ID_dbranch_tgt  (ID_dbranch_tgt),
 
@@ -62,7 +64,7 @@ module proc (/*AUTOARG*/
         .clk          (clk),
         .rst          (rst),
         // freeze PC on hazard or halt
-        .freeze_pc    (freeze_pc || ID_halt),
+        .freeze_pc    (freeze_pc),
         .err          (IF_err),
         .rewrite_pc   (IF_rewrite_pc),
         .pc_rewrite_to(IF_pc_rewrite_to),
@@ -78,7 +80,7 @@ module proc (/*AUTOARG*/
         .rst            (rst),
         .flush          (flush_if2id),
         // freeze IF/ID register on halt so pipeline gradually fills with HALT
-        .write_en       (!(freeze_if2id || ID_halt)),
+        .freeze         (freeze_if2id),
 
         .i_next_pc_basic(IF_next_pc_basic),
         .o_next_pc_basic(ID_next_pc_basic),
@@ -158,7 +160,7 @@ module proc (/*AUTOARG*/
     flop_id2ex fl_id2ex (
         .clk        (clk),
         .rst        (rst),
-        .bubble     (bubble_id2ex),
+        .bubble     (bubble_id2ex || flush_id2ex),
 
         .i_halt     (ID_halt),
         .o_halt     (ID2EX_halt),
@@ -180,6 +182,8 @@ module proc (/*AUTOARG*/
 
         .i_flow_ty  (ID_flow_ty),
         .o_flow_ty  (ID2EX_flow_ty),
+        .i_dbranch_tgt(ID_dbranch_tgt),
+        .o_dbranch_tgt(ID2EX_dbranch_tgt),
 
         .i_dmem_ren (   ID_dmem_ren),
         .o_dmem_ren (ID2EX_dmem_ren),

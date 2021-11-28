@@ -16,6 +16,8 @@ module flop_id2ex(
 
     input  wire [1:0] i_flow_ty,
     output wire [1:0] o_flow_ty,
+    input  wire [15:0] i_dbranch_tgt,
+    output wire [15:0] o_dbranch_tgt,
 
     input  wire i_rf_wen,
     output wire o_rf_wen,
@@ -72,6 +74,11 @@ module flop_id2ex(
     register #(.WIDTH(2)) r_flow_ty (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(bubble ? FLOW_BASIC : i_flow_ty), .read_data(o_flow_ty)
+    );
+
+    register #(.WIDTH(16)) r_dbranch_tgt (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_dbranch_tgt), .read_data(o_dbranch_tgt)
     );
 
     // -- writeback control
