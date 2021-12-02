@@ -23,6 +23,11 @@ module flop_id2ex(
     input  wire [15:0] i_link_pc,
     output wire [15:0] o_link_pc,
 
+    input  wire i_siic,
+    output wire o_siic,
+    input  wire i_rti,
+    output wire o_rti,
+
     input  wire i_rf_wen,
     output wire o_rf_wen,
     input  wire  [1:0] i_wb_op,
@@ -88,6 +93,16 @@ module flop_id2ex(
     register #(.WIDTH(16)) r_link_pc (
         .clk(clk), .rst(rst), .write_en(write_en),
         .write_data(i_link_pc), .read_data(o_link_pc)
+    );
+
+    register #(.WIDTH(1)) r_siic (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_siic & ~bubble), .read_data(o_siic)
+    );
+
+    register #(.WIDTH(1)) r_rti (
+        .clk(clk), .rst(rst), .write_en(write_en),
+        .write_data(i_rti & ~bubble), .read_data(o_rti)
     );
 
     // -- writeback control

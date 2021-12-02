@@ -6,7 +6,7 @@ tests_jumps:
 
 
 ## course provided
-test_suite: tests_simple tests_complex tests_rand_simple tests_rand_complex tests_rand_ctrl tests_rand_mem tests_complex_pipelined
+test_suite: tests_simple tests_complex tests_rand_simple tests_rand_complex tests_rand_ctrl tests_rand_mem tests_complex_pipelined tests_extra_credits
 
 tests_simple:
 	wsrun.pl -pipe -list simple.list proc_hier_pbench *.v
@@ -35,3 +35,7 @@ tests_rand_mem:
 tests_complex_pipelined:
 	wsrun.pl -pipe -list complex_pipelined.list proc_hier_pbench *.v
 	mv summary.log complex_pipelined.summary.log
+
+tests_extra_credits:
+	wsrun.pl -pipe -list extra_credits.list proc_hier_pbench *.v
+	mv summary.log extra_credits.summary.log

@@ -1,5 +1,7 @@
 `default_nettype none
 module execute (
+    input  wire clk,
+    input  wire rst,
     output wire err,
 
     input  wire [3:0]  alu_op,
@@ -7,6 +9,10 @@ module execute (
 
     input  wire [2:0]  fcu_op,
     input  wire        writeflag,
+
+    input  wire        siic,
+    input  wire        rti,
+    input  wire [15:0] link_pc,
 
     input  wire [1:0]  fwd_X,
     input  wire [1:0]  fwd_Y,
@@ -66,7 +72,17 @@ module execute (
         .flag (flag)
     );
 
-    assign alu_out = writeflag ? {15'b0, flag} : alu_out_direct;
+    wire [15:0] epc;
+    register #(.WIDTH(16)) r_epc (
+        .clk(clk), .rst(rst),
+        .write_en  (siic),
+        .write_data(link_pc),
+        .read_data(epc)
+    );
+
+    assign alu_out = rti ? epc :
+               writeflag ? {15'b0, flag}
+                         : alu_out_direct;
 
     assign err = 1'b0;
 endmodule

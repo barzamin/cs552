@@ -37,6 +37,9 @@ module decode (
     output wire [1:0] flow_ty,
     output wire [15:0] dbranch_tgt,
 
+    output wire siic,
+    output wire rti,
+
     output wire halt
 );
     // (nearly) all control op defs
@@ -103,13 +106,16 @@ module decode (
 
 
     // -- compute branch target
+    wire [15:0] dbranch_tgt_imm;
     adder16 i_adder16 (
         .A   (next_pc_basic),
         .B   (imm16),
         .Cin (1'b0),
-        .S   (dbranch_tgt),
+        .S   (dbranch_tgt_imm),
         .Cout()
     );
+    // hack to make SIIC effectively an unconditional branch
+    assign dbranch_tgt = siic ? 16'h0002 : dbranch_tgt_imm;
 
     // -- opcode decoding/control logic
     wire control_err;
@@ -135,6 +141,9 @@ module decode (
         .rf_write_en  (rf_wen),
 
         .flow_ty      (flow_ty),
+
+        .siic         (siic),
+        .rti          (rti),
 
         .halt         (halt),
 

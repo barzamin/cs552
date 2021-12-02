@@ -104,6 +104,7 @@ module proc (/*AUTOARG*/
     wire        ID_writeflag;
     wire        ID_dmem_ren, ID_dmem_wen;
     wire        ID_rf_wen;
+    wire        ID_siic, ID_rti;
     // -- loopbacks
     wire        WB_rf_wen;
     wire [2:0]  WB_rO;
@@ -132,6 +133,9 @@ module proc (/*AUTOARG*/
         .flow_ty      (ID_flow_ty),
         .dbranch_tgt  (ID_dbranch_tgt),
 
+        .siic         (ID_siic),
+        .rti          (ID_rti),
+
         .rf_wen       (ID_rf_wen),
         .wb_op        (ID_wb_op),
         .writeflag    (ID_writeflag),
@@ -158,6 +162,7 @@ module proc (/*AUTOARG*/
     wire        ID2EX_writeflag;
 
     wire [15:0] ID2EX_link_pc;
+    wire        ID2EX_siic, ID2EX_rti;
 
     wire        ID2EX_dmem_wen, ID2EX_dmem_ren;
     wire        ID2EX_rf_wen;
@@ -194,6 +199,11 @@ module proc (/*AUTOARG*/
         .i_link_pc(ID_next_pc_basic),
         .o_link_pc(ID2EX_link_pc),
 
+        .i_siic(ID_siic),
+        .o_siic(ID2EX_siic),
+        .i_rti(ID_rti),
+        .o_rti(ID2EX_rti),
+
         .i_dmem_ren (   ID_dmem_ren),
         .o_dmem_ren (ID2EX_dmem_ren),
         .i_dmem_wen (   ID_dmem_wen),
@@ -225,11 +235,17 @@ module proc (/*AUTOARG*/
     // -- (possibly) forwarded version
     wire [15:0] EX_vY;
     execute execute (
+        .clk      (clk),
+        .rst      (rst),
         .err      (EX_err),
 
         .alu_op   (ID2EX_alu_op),
         .alu_b_imm(ID2EX_alu_b_imm),
         .fcu_op   (ID2EX_fcu_op),
+
+        .link_pc  (ID2EX_link_pc),
+        .siic     (ID2EX_siic),
+        .rti      (ID2EX_rti),
 
         .vX       (ID2EX_vX),
         .vY       (ID2EX_vY),

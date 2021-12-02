@@ -15,6 +15,9 @@ module control(
     output reg readfrom_rd,
     output reg link,
 
+    output reg siic,
+    output reg rti,
+
     output reg [1:0] wb_op,
     output reg writeflag,
     output reg rf_write_en,
@@ -41,6 +44,9 @@ module control(
         readfrom_rd = 1'b0;
         link = 1'b0;
 
+        siic = 1'b0;
+        rti = 1'b0;
+
         wb_op = WB_ALU;
         writeflag = 1'b0;
         rf_write_en = 1'b0;
@@ -56,8 +62,7 @@ module control(
                 halt = 1'b1; // TODO
             end
 
-            // SIIC and RTI specifically handled as nops (as per spec) so they don't raise an `err` and hang the sim
-            OP_NOP, OP_SIIC, OP_RTI : begin
+            OP_NOP : begin
                 // nop :)
             end
 
@@ -307,6 +312,16 @@ module control(
                 wb_op = WB_ALU;
                 writeto_rs = 1'b1;
                 rf_write_en = 1'b1;
+            end
+
+            OP_SIIC : begin
+                flow_ty = FLOW_JUMP;
+                siic = 1'b1;
+            end
+
+            OP_RTI : begin
+                flow_ty = FLOW_ALU;
+                rti = 1'b1;
             end
 
             default : begin
