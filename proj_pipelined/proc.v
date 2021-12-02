@@ -40,6 +40,7 @@ module proc (/*AUTOARG*/
     wire IF_rewrite_pc;
     wire [15:0] IF_pc_rewrite_to;
 
+    wire force_bflow_id2ex;
     branch_controller branch_controller (
         .err             (bctrl_err),
 
@@ -55,7 +56,8 @@ module proc (/*AUTOARG*/
         .IF_pc_rewrite_to(IF_pc_rewrite_to),
 
         .flush_if2id     (flush_if2id),
-        .flush_id2ex     (flush_id2ex)
+        .flush_id2ex     (flush_id2ex),
+        .force_bflow_id2ex(force_bflow_id2ex)
     );
 
 
@@ -164,6 +166,7 @@ module proc (/*AUTOARG*/
         .clk        (clk),
         .rst        (rst),
         .bubble     (bubble_id2ex || flush_id2ex || halt_committed),
+        .force_basic_flow(force_bflow_id2ex),
 
         .i_halt     (ID_halt),
         .o_halt     (ID2EX_halt),

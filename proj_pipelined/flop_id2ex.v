@@ -2,6 +2,7 @@ module flop_id2ex(
     input  wire clk,
     input  wire rst,
     input  wire bubble,
+    input  wire force_basic_flow,
 
     input  wire i_halt,
     output wire o_halt,
@@ -76,7 +77,7 @@ module flop_id2ex(
 
     register #(.WIDTH(2)) r_flow_ty (
         .clk(clk), .rst(rst), .write_en(write_en),
-        .write_data(bubble ? FLOW_BASIC : i_flow_ty), .read_data(o_flow_ty)
+        .write_data((bubble || force_basic_flow) ? FLOW_BASIC : i_flow_ty), .read_data(o_flow_ty)
     );
 
     register #(.WIDTH(16)) r_dbranch_tgt (
