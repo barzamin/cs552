@@ -13,7 +13,7 @@ module hazard (
     assign dep_X = ID_rX == EX_rO;
     assign dep_Y = ID_rY == EX_rO;
 
-    // we can't forward EX->EX; need to stall one cycle for memory result
+    // EX needs the result of a MEM read; we need to stall one cycle for memory result
     wire stall;
     assign stall = EX_dmem_ren && (dep_X || dep_Y);
 

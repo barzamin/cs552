@@ -1,3 +1,20 @@
+SOURCES := adder16.v alu.v branch_controller.v cla4.v cla_fulladder.v control.v decode.v execute.v fcu.v fetch.v flop_ex2mem.v flop_id2ex.v flop_if2id.v flop_mem2wb.v forwarder.v hazard.v memory.v mux2_1.v proc.v register.v reverser.v rf_bypassed.v rf.v shifter.v writeback.v
+
+%.vcheck.out: %.v
+	vcheck.sh $< $@
+
+check: $(SOURCES:.v=.vcheck.out)
+	name-convention-check
+	cat *.vcheck.out
+
+project-pipelined.tar:
+	tar cf $@ *.v *.vh *.vcheck.out *.summary.log Makefile
+
+clean:
+	rm -rf *.img *.lst *.wlf *.vcd *.fst *.vcheck.out *.img *.img.dmem *.img.reg *.trace transcript archsim.* __work
+
+### TESTING ###
+
 tests_my:
 	wsrun.pl -pipe -list my.list proc_hier_pbench *.v
 

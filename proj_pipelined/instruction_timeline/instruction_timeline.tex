@@ -1,0 +1,45 @@
+\documentclass{article}
+
+\title{instruction timeline}
+\author{erin marshall \texttt{<limarshall@wisc.edu>}}
+
+% 1 2 3 4 5
+% F D X M W
+
+% % lbi r0, 0 
+% % lbi r5, 43
+% % lbi r6, 43
+% % lbi r7, 43        
+% % ld r1, r0, 0
+% % st r5, r1, 0
+% % ld r1, r0, 2
+% % st r6, r1, 1
+% % ld r1, r0, 4
+% % st r7, r1, 1
+% % halt
+
+\begin{document}
+
+\maketitle
+Instead of an instruction timeline, I explain the hardware as implemented (as per Rutwik Jain's answer on Piazza to \texttt{@385}).
+
+I put significant effort into avoiding any potential stalls. As such, the pipeline could be described as \textit{fully-forwarded};
+only memory loads incur a stall (when EX needs a result from dmem that has not completed the MEM stage yet). Namely, the following paths
+are implemented:
+
+\begin{enumerate}
+    \item ALU output latched at EX/MEM forwarded to either ALU port in EX
+    \item ALU output latched at MEM/WB forwarded to either ALU port in EX (previous MEM\(\,\rightarrow\,\)EX takes priority over this)
+    \item writeback data latched at MEM/WB forwarded to MEM dmem write input if WB of the older instruction is writing a register we're writing to dmem
+\end{enumerate}
+
+These paths are integrated into their respective stages, and managed by a top-level unit called the \texttt{forwarder}, which observes all relevant signals and sends out mux controls.
+
+One data hazard remains: when an instruction reading from dmem is immediately followed by one needing that dmem result in its EX stage. We must stall the second instruction by one cycle
+to properly await the dmem result; this is done by the \texttt{hazard} unit, used similarly to the previous \texttt{forwarder}.
+
+Control hazards are managed by the \texttt{branch\_controller}, which decides when and how to resteer mispredicted branches. Note that displaced unconditional jumps,
+where both the target and the direction are known in ID, are subject to an "early resteer". Early resteers rewrite the PC and flush IF/ID immediately following decoding,
+rather than a typical computed jump or conditional branch which requires a late resteer as part of the EX stage of branch execution.
+
+\end{document}
