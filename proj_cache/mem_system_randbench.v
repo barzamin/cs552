@@ -129,6 +129,12 @@ module mem_system_randbench(/*AUTOARG*/);
       // change inputs for next cycle
       
       #85;
+
+      // if (test_success === 1'b0) begin
+      //   $display("[TEST FAILED EARLY]");
+      //   $stop;
+      // end
+
       if (!rst && (!Stall)) begin      
          if (n_requests < 1000) begin
             full_random_addr;

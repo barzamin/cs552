@@ -126,7 +126,7 @@ module mem_system(/*AUTOARG*/
     localparam STATE_WR_LOAD_WORD3 = 6'b101110;
     localparam STATE_WR_LOAD_WAIT0 = 6'b101111;
     localparam STATE_WR_LOAD_DONE  = 6'b110000;
-    localparam STATE_WR_FROM_CACHE = 6'b110001;
+    localparam STATE_WR_TO_CACHE = 6'b110001;
 
     localparam STATE_INVALID = 6'b111111;
 
@@ -198,6 +198,7 @@ module mem_system(/*AUTOARG*/
             STATE_RD_EVICT_WORD0 : begin
                 cache_en = 1'b1;
                 cache_tag_in = cache_tag_out;
+                cache_offset = WOFFS0;
 
                 mem_addr = {cache_tag_out, cache_index, WOFFS0};
                 mem_wr = 1'b1;
@@ -208,6 +209,7 @@ module mem_system(/*AUTOARG*/
             STATE_RD_EVICT_WORD1 : begin
                 cache_en = 1'b1;
                 cache_tag_in = cache_tag_out;
+                cache_offset = WOFFS1;
 
                 mem_addr = {cache_tag_out, cache_index, WOFFS1};
                 mem_wr = 1'b1;
@@ -218,6 +220,7 @@ module mem_system(/*AUTOARG*/
             STATE_RD_EVICT_WORD2 : begin
                 cache_en = 1'b1;
                 cache_tag_in = cache_tag_out;
+                cache_offset = WOFFS2;
 
                 mem_addr = {cache_tag_out, cache_index, WOFFS2};
                 mem_wr = 1'b1;
@@ -228,6 +231,7 @@ module mem_system(/*AUTOARG*/
             STATE_RD_EVICT_WORD3 : begin
                 cache_en = 1'b1;
                 cache_tag_in = cache_tag_out;
+                cache_offset = WOFFS3;
 
                 mem_addr = {cache_tag_out, cache_index, WOFFS3};
                 mem_wr = 1'b1;
@@ -338,6 +342,7 @@ module mem_system(/*AUTOARG*/
             STATE_WR_EVICT_WORD0 : begin
                 cache_en = 1'b1;
                 cache_tag_in = cache_tag_out;
+                cache_offset = WOFFS0;
 
                 mem_addr = {cache_tag_out, cache_index, WOFFS0};
                 mem_wr = 1'b1;
@@ -348,6 +353,7 @@ module mem_system(/*AUTOARG*/
             STATE_WR_EVICT_WORD1 : begin
                 cache_en = 1'b1;
                 cache_tag_in = cache_tag_out;
+                cache_offset = WOFFS1;
 
                 mem_addr = {cache_tag_out, cache_index, WOFFS1};
                 mem_wr = 1'b1;
@@ -358,6 +364,7 @@ module mem_system(/*AUTOARG*/
             STATE_WR_EVICT_WORD2 : begin
                 cache_en = 1'b1;
                 cache_tag_in = cache_tag_out;
+                cache_offset = WOFFS2;
 
                 mem_addr = {cache_tag_out, cache_index, WOFFS2};
                 mem_wr = 1'b1;
@@ -368,6 +375,7 @@ module mem_system(/*AUTOARG*/
             STATE_WR_EVICT_WORD3 : begin
                 cache_en = 1'b1;
                 cache_tag_in = cache_tag_out;
+                cache_offset = WOFFS3;
 
                 mem_addr = {cache_tag_out, cache_index, WOFFS3};
                 mem_wr = 1'b1;
@@ -441,10 +449,10 @@ module mem_system(/*AUTOARG*/
                 cache_wr = 1'b1;
                 cache_offset = WOFFS3;
 
-                next_state = STATE_WR_FROM_CACHE;
+                next_state = STATE_WR_TO_CACHE;
             end
 
-           STATE_WR_FROM_CACHE : begin
+           STATE_WR_TO_CACHE : begin
                 Done = 1'b1;
 
                 cache_din = DataIn;
