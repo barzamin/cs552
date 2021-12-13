@@ -87,7 +87,6 @@ module mem_system(/*AUTOARG*/
 
     localparam STATE_IDLE     = 6'b000000;
     localparam STATE_RD_START = 6'b000001;
-    localparam STATE_RD_MISS  = 6'b000010;
 
     localparam STATE_RD_EVICT_WORD0 = 6'b000011;
     localparam STATE_RD_EVICT_WORD1 = 6'b000100;
@@ -105,10 +104,9 @@ module mem_system(/*AUTOARG*/
     localparam STATE_RD_LOAD_WORD3 = 6'b001110;
     localparam STATE_RD_LOAD_WAIT0 = 6'b001111;
     localparam STATE_RD_LOAD_DONE  = 6'b010000;
-    localparam STATE_RD_FROM_CACHE = 6'b010001; // could probably obviate need by knowing when to assert done as data is retned
+    localparam STATE_RD_FROM_CACHE = 6'b010001; // TODO could probably obviate need by knowing when to assert done as data is retned
 
     localparam STATE_WR_START = 6'b100000;
-    localparam STATE_WR_MISS  = 6'b100001;
 
     localparam STATE_WR_EVICT_WORD0 = 6'b100011;
     localparam STATE_WR_EVICT_WORD1 = 6'b100100;
@@ -184,15 +182,11 @@ module mem_system(/*AUTOARG*/
                 CacheHit = cache_hit & line_valid;
                 Done = cache_hit & line_valid;
 
-                // if we hit, everything's good; otherwise, we need to load or evict
-                next_state = (cache_hit & line_valid) ? STATE_IDLE : STATE_RD_MISS;
-            end
+                // $display("STATE_RD_START: cache_hit=%b, line_valid=%b, line_dirty=%b", cache_hit, line_valid, line_dirty);
 
-            STATE_RD_MISS : begin
-                cache_en = 1'b1;
-                cache_comp = 1'b1;
-                // is line dirty? if so, evict; else: just load new line
-                next_state = line_dirty ? STATE_RD_EVICT_WORD0 : STATE_RD_LOAD_WORD0;
+                // if we hit, everything's good; otherwise, we need to load or evict (iff dirty).
+                next_state = (cache_hit & line_valid) ? STATE_IDLE :
+                             line_dirty ? STATE_RD_EVICT_WORD0 : STATE_RD_LOAD_WORD0;
             end
 
             STATE_RD_EVICT_WORD0 : begin
@@ -329,14 +323,8 @@ module mem_system(/*AUTOARG*/
                 Done = cache_hit & line_valid;
 
                 // are we done (hit cache) or do we need to handle a miss?
-                next_state = (cache_hit & line_valid) ? STATE_IDLE : STATE_WR_MISS;
-            end
-
-            STATE_WR_MISS : begin
-                cache_en = 1'b1;
-                cache_comp = 1'b1;
-
-                next_state = line_dirty ? STATE_WR_EVICT_WORD0 : STATE_WR_LOAD_WORD0;
+                next_state = (cache_hit & line_valid) ? STATE_IDLE :
+                             line_dirty ? STATE_WR_EVICT_WORD0 : STATE_WR_LOAD_WORD0;
             end
 
             STATE_WR_EVICT_WORD0 : begin
