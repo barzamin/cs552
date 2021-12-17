@@ -1,3 +1,4 @@
+SOURCES = mem_system.v register.v
 perftests = $(addsuffix .perftest, $(basename $(wildcard mem-*.addr)))
 
 perftests: $(perftests)
@@ -15,3 +16,14 @@ randbench:
 
 fsm.svg: fsm.dot
 	dot -Tsvg $^ > $@
+
+cache_controller_fsm.pdf: fsm.svg
+	inkscape $< --export-pdf=$@
+
+%.vcheck.out: %.v
+	vcheck.sh $< $@
+
+check: $(SOURCES:.v=.vcheck.out)
+	name-convention-check
+	cat *.vcheck.out
+
