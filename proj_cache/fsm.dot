@@ -1,62 +1,68 @@
 digraph controller_fsm {
-    // rankdir = "LR";
-
     node [shape=point] RESET;
 
-    node [shape=box, margin=0];
-    IDLE;
+    node [shape=plaintext] DETAILS [label=<
+        <B>signal defaults</B><BR/>
+        Stall=1<BR/>
+        Done=0<BR/>
+        CacheHit=0<BR/>
+        DataOut=cache_dout<BR/>
+        cache_en=0<BR/>
+        cache_comp=0<BR/>
+        cache_wr=0<BR/>
+        cache_valid_in=1<BR/>
+        cache_offset=Addr[2:0]<BR/>
+        cache_index=Addr[10:3]<BR/>
+        cache_tag_in=Addr[15:11]<BR/>
+        mem_addr=16'h0000<BR/>
+        mem_wr=0<BR/>
+        mem_rd=0<BR/>
+        mem_din=cache_dout<BR/>
+        cache_din=mem_dout<BR/>>];
 
-    RD_START;
-    RD_EVICT_WORD0;
-    RD_EVICT_WORD1;
-    RD_EVICT_WORD2;
-    RD_EVICT_WORD3;
-    RD_EVICT_WAIT0;
-    RD_EVICT_WAIT1;
-    RD_EVICT_WAIT2;
-    RD_EVICT_DONE;
-    RD_LOAD_WORD0;
-    RD_LOAD_WORD1;
-    RD_LOAD_WORD2;
-    RD_LOAD_WORD3;
-    RD_LOAD_WAIT0;
-    RD_LOAD_DONE;
-    RD_FROM_CACHE;
+    node [shape=record, margin=0];
+    IDLE [label="{<n>IDLE|<o>Stall=0}"];
 
-    WR_START;
-    WR_EVICT_WORD0;
-    WR_EVICT_WORD1;
-    WR_EVICT_WORD2;
-    WR_EVICT_WORD3;
-    WR_EVICT_WAIT0;
-    WR_EVICT_WAIT1;
-    WR_EVICT_WAIT2;
-    WR_EVICT_DONE;
-    WR_LOAD_WORD0;
-    WR_LOAD_WORD1;
-    WR_LOAD_WORD2;
-    WR_LOAD_WORD3;
-    WR_LOAD_WAIT0;
-    WR_LOAD_DONE;
-    WR_TO_CACHE;
+    RD_START [label="{<n>RD_START|<o>cache_en=1\ncache_comp=1\nCacheHit=(cache_hit&line_valid)\nDone=(cache_hit&line_valid)}"];
+    RD_EVICT_WORD0 [label="{<n>RD_EVICT_WORD0|<o>cache_en=1\ncache_tag_in=cache_tag_out\ncache_offset=000\nmem_addr=\{cache_tag_out, cache_index, 000\}\nmem_wr=1}"];
+    RD_EVICT_WORD1 [label="{<n>RD_EVICT_WORD1|<o>cache_en=1\ncache_tag_in=cache_tag_out\ncache_offset=010\nmem_addr=\{cache_tag_out, cache_index, 010\}\nmem_wr=1}"];
+    RD_EVICT_WORD2 [label="{<n>RD_EVICT_WORD2|<o>cache_en=1\ncache_tag_in=cache_tag_out\ncache_offset=100\nmem_addr=\{cache_tag_out, cache_index, 100\}\nmem_wr=1}"];
+    RD_EVICT_WORD3 [label="{<n>RD_EVICT_WORD3|<o>cache_en=1\ncache_tag_in=cache_tag_out\ncache_offset=110\nmem_addr=\{cache_tag_out, cache_index, 110\}\nmem_wr=1}"];
+    RD_LOAD_WORD0  [label="{<n>RD_LOAD_WORD0|<o>mem_rd=1\nmem_addr=\{Addr[15:3], 000\}}"];
+    RD_LOAD_WORD1  [label="{<n>RD_LOAD_WORD1|<o>mem_rd=1\nmem_addr=\{Addr[15:3], 010\}}"];
+    RD_LOAD_WORD2  [label="{<n>RD_LOAD_WORD2|<o>mem_rd=1\nmem_addr=\{Addr[15:3], 100\}\ncache_en=1\ncache_wr=1\ncache_offset=000}"];
+    RD_LOAD_WORD3  [label="{<n>RD_LOAD_WORD3|<o>mem_rd=1\nmem_addr=\{Addr[15:3], 110\}\ncache_en=1\ncache_wr=1\ncache_offset=010}"];
+    RD_LOAD_WAIT0  [label="{<n>RD_LOAD_WAIT0|<o>cache_en=1\ncache_wr=1\ncache_offset=100}"];
+    RD_LOAD_DONE   [label="{<n>RD_LOAD_DONE|<o>cache_en=1\ncache_wr=1\ncache_offset=110}"];
+    RD_FROM_CACHE  [label="{<n>RD_FROM_CACHE|<o>Done=1\ncache_en=1\ncache_comp=1}"];
+
+    WR_START [label="{<n>RD_START|<o>cache_en=1\ncache_wr=1\ncache_comp=1\ncache_din=DataIn\nCacheHit=(cache_hit&line_valid)\nDone=(cache_hit&line_valid)}"];
+    WR_EVICT_WORD0 [label="{<n>WR_EVICT_WORD0|<o>cache_en=1\ncache_tag_in=cache_tag_out\ncache_offset=000\nmem_addr=\{cache_tag_out, cache_index, 000\}\nmem_wr=1}"];
+    WR_EVICT_WORD1 [label="{<n>WR_EVICT_WORD1|<o>cache_en=1\ncache_tag_in=cache_tag_out\ncache_offset=010\nmem_addr=\{cache_tag_out, cache_index, 010\}\nmem_wr=1}"];
+    WR_EVICT_WORD2 [label="{<n>WR_EVICT_WORD2|<o>cache_en=1\ncache_tag_in=cache_tag_out\ncache_offset=100\nmem_addr=\{cache_tag_out, cache_index, 100\}\nmem_wr=1}"];
+    WR_EVICT_WORD3 [label="{<n>WR_EVICT_WORD3|<o>cache_en=1\ncache_tag_in=cache_tag_out\ncache_offset=110\nmem_addr=\{cache_tag_out, cache_index, 110\}\nmem_wr=1}"];
+    WR_LOAD_WORD0  [label="{<n>WR_LOAD_WORD0|<o>mem_rd=1\nmem_addr=\{Addr[15:3], 000\}}"];
+    WR_LOAD_WORD1  [label="{<n>WR_LOAD_WORD1|<o>mem_rd=1\nmem_addr=\{Addr[15:3], 010\}}"];
+    WR_LOAD_WORD2  [label="{<n>WR_LOAD_WORD2|<o>mem_rd=1\nmem_addr=\{Addr[15:3], 100\}\ncache_en=1\ncache_wr=1\ncache_offset=000}"];
+    WR_LOAD_WORD3  [label="{<n>WR_LOAD_WORD3|<o>mem_rd=1\nmem_addr=\{Addr[15:3], 110\}\ncache_en=1\ncache_wr=1\ncache_offset=010}"];
+    WR_LOAD_WAIT0  [label="{<n>WR_LOAD_WAIT0|<o>cache_en=1\ncache_wr=1\ncache_offset=100}"];
+    WR_LOAD_DONE   [label="{<n>WR_LOAD_DONE|<o>cache_en=1\ncache_wr=1\ncache_offset=110}"];
+    WR_TO_CACHE    [label="{<n>WR_TO_CACHE|<o>cache_din=DataIn\ncache_en=1\ncache_comp=1\ncache_wr=1}"];
+
 
     RESET -> IDLE;
-    IDLE  -> RD_START;
-    IDLE  -> WR_START;
+    IDLE  -> RD_START [label = "Rd"];
+    IDLE  -> WR_START [label = "Wr"];
     IDLE  -> IDLE;
 
-    RD_START -> RD_EVICT_WORD0;
-    RD_START -> RD_LOAD_WORD0;
+    RD_START -> IDLE [label = "cache_hit & line_valid"];
+    RD_START -> RD_LOAD_WORD0 [label = "!(cache_hit & line_valid) & line_dirty"];
+    RD_START -> RD_EVICT_WORD0 [label = "!(cache_hit & line_valid) & line_dirty"];
 
     RD_EVICT_WORD0 -> RD_EVICT_WORD1;
     RD_EVICT_WORD1 -> RD_EVICT_WORD2;
     RD_EVICT_WORD2 -> RD_EVICT_WORD3;
-    RD_EVICT_WORD3 -> RD_EVICT_WAIT0;
-
-    RD_EVICT_WAIT0 -> RD_EVICT_WAIT1;
-    RD_EVICT_WAIT1 -> RD_EVICT_WAIT2;
-    RD_EVICT_WAIT2 -> RD_EVICT_DONE;
-    RD_EVICT_DONE  -> RD_LOAD_WORD0;
+    RD_EVICT_WORD3 -> RD_LOAD_WORD0;
 
     RD_LOAD_WORD0 -> RD_LOAD_WORD1;
     RD_LOAD_WORD1 -> RD_LOAD_WORD2;
@@ -67,18 +73,14 @@ digraph controller_fsm {
     RD_LOAD_DONE  -> RD_FROM_CACHE;
     RD_FROM_CACHE -> IDLE;
 
-    WR_START -> WR_EVICT_WORD0;
-    WR_START -> WR_LOAD_WORD0;
+    WR_START -> IDLE [label = "cache_hit & line_valid"];
+    WR_START -> WR_LOAD_WORD0 [label = "!(cache_hit & line_valid) & !line_dirty"];
+    WR_START -> WR_EVICT_WORD0 [label = "!(cache_hit & line_valid) & line_dirty"];
 
     WR_EVICT_WORD0 -> WR_EVICT_WORD1;
     WR_EVICT_WORD1 -> WR_EVICT_WORD2;
     WR_EVICT_WORD2 -> WR_EVICT_WORD3;
-    WR_EVICT_WORD3 -> WR_EVICT_WAIT0;
-
-    WR_EVICT_WAIT0 -> WR_EVICT_WAIT1;
-    WR_EVICT_WAIT1 -> WR_EVICT_WAIT2;
-    WR_EVICT_WAIT2 -> WR_EVICT_DONE;
-    WR_EVICT_DONE  -> WR_LOAD_WORD0;
+    WR_EVICT_WORD3 -> WR_LOAD_WORD0;
 
     WR_LOAD_WORD0 -> WR_LOAD_WORD1;
     WR_LOAD_WORD1 -> WR_LOAD_WORD2;
@@ -87,5 +89,5 @@ digraph controller_fsm {
 
     WR_LOAD_WAIT0 -> WR_LOAD_DONE;
     WR_LOAD_DONE  -> WR_TO_CACHE;
-    WR_TO_CACHE -> IDLE;
+    WR_TO_CACHE   -> IDLE;
 }
