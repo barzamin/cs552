@@ -1,0 +1,5 @@
+// readback right value if multiple writes to same loc
+// Wr Rd Addr Val
+1 0 2048 1337
+1 0 2048 69
+0 1 2048 0

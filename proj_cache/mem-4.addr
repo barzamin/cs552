@@ -1,0 +1,5 @@
+// replacement: same idx, diff tag
+// Wr Rd Addr Val
+1 0 256 1337
+1 0 264 6666
+0 1 264 0

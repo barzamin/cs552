@@ -1,0 +1,12 @@
+// makes sure that we don't refetch lines, and fetch them at the appropriate time
+// Wr Rd Addr Value
+// first line; miss
+0 1 512 0
+0 1 514 0
+0 1 516 0
+0 1 518 0
+// new line here; miss
+0 1 520 0
+0 1 522 0
+0 1 524 0
+0 1 526 0

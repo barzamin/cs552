@@ -1,0 +1,7 @@
+// interleaved writes/reads should all return correct values in operation issue sequence order
+1 0 2048 1337
+0 1 2048 0
+1 0 2048 69
+0 1 2048 0
+1 0 2048 666
+0 1 2048 0
