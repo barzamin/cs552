@@ -223,6 +223,13 @@ module mem_system(/*AUTOARG*/
                 next_state = STATE_RD_LOAD_WORD0;
             end
 
+            // can go directly to loads since we have
+            // mem WR w0  \ * b0 stalled
+            // mem WR w1  | *
+            // mem WR w2  | *
+            // mem WR w3  | * <- w0 write commits here
+            // mem RD w0  /   <- so we can read it here
+
             STATE_RD_LOAD_WORD0 : begin
                 mem_addr = {Addr[15:3], WOFFS0};
                 mem_rd = 1'b1;
@@ -422,16 +429,6 @@ module mem_system(/*AUTOARG*/
             end
         endcase
     end
-
-    always @(negedge clk) begin
-        if (err) begin
-            $display("[ERROR!] cache_err=%b, mem_err=%b, ctl_err=%b", cache_err, mem_err, ctl_err);
-            if (ctl_err) begin
-                $display("[ERROR!]   control error on state=%b", state);
-            end
-        end
-    end
-
 endmodule // mem_system
 
 // DUMMY LINE FOR REV CONTROL :9:
