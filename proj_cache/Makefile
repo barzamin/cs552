@@ -27,3 +27,5 @@ check: $(SOURCES:.v=.vcheck.out)
 	name-convention-check
 	cat *.vcheck.out
 
+project-cache.tar:
+	tar cf $@ *.v *.vcheck.out Makefile *.py *.addr
