@@ -25,11 +25,11 @@ module mem_system(/*AUTOARG*/
     /* data_mem = 1, inst_mem = 0 *
     * needed for cache parameter */
     parameter memtype = 0;
-    reg cache_en;
+    reg  cache_en;
     wire cache_hit;
     wire line_valid;
     wire line_dirty;
-    reg cache_comp;
+    reg  cache_comp;
     reg  [15:0] cache_din;
     wire [15:0] cache_dout;
     reg  [4:0]  cache_tag_in;
@@ -61,9 +61,9 @@ module mem_system(/*AUTOARG*/
     wire [15:0] mem_dout;
     wire mem_stall;
     wire [3:0] mem_busy;
-    reg [15:0] mem_addr;
-    reg [15:0] mem_din;
-    reg mem_wr, mem_rd;
+    reg  [15:0] mem_addr;
+    reg  [15:0] mem_din;
+    reg  mem_wr, mem_rd;
 
     four_bank_mem mem(// Outputs
                      .data_out          (mem_dout),
@@ -93,11 +93,6 @@ module mem_system(/*AUTOARG*/
     localparam STATE_RD_EVICT_WORD2 = 6'b000101;
     localparam STATE_RD_EVICT_WORD3 = 6'b000110;
 
-    localparam STATE_RD_EVICT_WAIT0 = 6'b000111;
-    localparam STATE_RD_EVICT_WAIT1 = 6'b001000;
-    localparam STATE_RD_EVICT_WAIT2 = 6'b001001;
-    localparam STATE_RD_EVICT_DONE = 6'b001010;
-
     localparam STATE_RD_LOAD_WORD0 = 6'b001011;
     localparam STATE_RD_LOAD_WORD1 = 6'b001100;
     localparam STATE_RD_LOAD_WORD2 = 6'b001101;
@@ -112,11 +107,6 @@ module mem_system(/*AUTOARG*/
     localparam STATE_WR_EVICT_WORD1 = 6'b100100;
     localparam STATE_WR_EVICT_WORD2 = 6'b100101;
     localparam STATE_WR_EVICT_WORD3 = 6'b100110;
-
-    localparam STATE_WR_EVICT_WAIT0 = 6'b100111;
-    localparam STATE_WR_EVICT_WAIT1 = 6'b101000;
-    localparam STATE_WR_EVICT_WAIT2 = 6'b101001;
-    localparam STATE_WR_EVICT_DONE = 6'b101010;
 
     localparam STATE_WR_LOAD_WORD0 = 6'b101011;
     localparam STATE_WR_LOAD_WORD1 = 6'b101100;
@@ -230,22 +220,6 @@ module mem_system(/*AUTOARG*/
                 mem_addr = {cache_tag_out, cache_index, WOFFS3};
                 mem_wr = 1'b1;
 
-                next_state = STATE_RD_EVICT_WAIT0;
-            end
-
-            STATE_RD_EVICT_WAIT0 : begin
-                next_state = STATE_RD_EVICT_WAIT1;
-            end
-
-            STATE_RD_EVICT_WAIT1 : begin
-                next_state = STATE_RD_EVICT_WAIT2;
-            end
-
-            STATE_RD_EVICT_WAIT2 : begin
-                next_state = STATE_RD_EVICT_DONE;
-            end
-
-            STATE_RD_EVICT_DONE : begin
                 next_state = STATE_RD_LOAD_WORD0;
             end
 
@@ -368,24 +342,15 @@ module mem_system(/*AUTOARG*/
                 mem_addr = {cache_tag_out, cache_index, WOFFS3};
                 mem_wr = 1'b1;
 
-                next_state = STATE_WR_EVICT_WAIT0;
-            end
-
-            STATE_WR_EVICT_WAIT0 : begin
-                next_state = STATE_WR_EVICT_WAIT1;
-            end
-
-            STATE_WR_EVICT_WAIT1 : begin
-                next_state = STATE_WR_EVICT_WAIT2;
-            end
-
-            STATE_WR_EVICT_WAIT2 : begin
-                next_state = STATE_WR_EVICT_DONE;
-            end
-
-            STATE_WR_EVICT_DONE : begin
                 next_state = STATE_WR_LOAD_WORD0;
             end
+
+            // can go directly to loads since we have
+            // mem WR w0  \ * b0 stalled
+            // mem WR w1  | *
+            // mem WR w2  | *
+            // mem WR w3  | * <- w0 write commits here
+            // mem RD w0  /   <- so we can read it here
 
             STATE_WR_LOAD_WORD0 : begin
                 mem_addr = {Addr[15:3], WOFFS0};
